@@ -51,5 +51,40 @@ app.post("/questions/add-new", async (req, res) => {
   }
 });
 
+app.patch("/questions/update/:id", async (req, res) => {
+  const question = await Questions.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+  try {
+    res.status(200).json({
+      status: "Success",
+      data: {
+        question,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "Failed",
+      message: err,
+    });
+  }
+});
+
+app.delete("/questions/delete/:id", async (req, res) => {
+  await Questions.findByIdAndDelete(req.params.id);
+  try {
+    res.status(204).json({
+      status: "Success",
+      data: {},
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: "Failed",
+      message: err,
+    });
+  }
+});
+
 //listen
 app.listen(port, () => console.log(`Listening on localhost:${port}`));
