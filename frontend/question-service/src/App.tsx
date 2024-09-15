@@ -7,7 +7,8 @@ import Question from "./Question";
 
 function App() {
   const [questions, setQuestions] = useState<Question[]>([]);
-  //Get Questions from the backend server
+
+  //GET Questions from the backend server
   useEffect(() => {
     axios
       .get("/questions/all")
@@ -20,6 +21,13 @@ function App() {
   }, []);
 
   console.log(questions);
+
+  /**
+   * Add Questions to the database
+   * Edit Questions in the database
+   * Delete a question from the database
+   */
+
   return (
     <div className="App">
       <header className="App-header">

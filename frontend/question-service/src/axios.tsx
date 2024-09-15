@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 
 const instance: AxiosInstance = axios.create({
-  baseURL: "http://localhost:9000",
+  baseURL: "https://peerprep-questions.as.r.appspot.com",
 });
 
 export default instance;
