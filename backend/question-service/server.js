@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import Questions from "./dbQuestions.js";
+import cors from "cors";
 
 //app config
 const app = express();
@@ -8,14 +9,20 @@ const port = process.env.PORT || 9000;
 
 //middleware
 app.use(express.json());
+app.use(cors());
+
 //DB Config
 const connectionURL =
-  "mongodb+srv://Taanish:vbF5VApcJlGEgxnS@cluster0.8ov9w.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  "mongodb+srv://<Username>:<Password>@cluster0.8ov9w.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 mongoose.connect(connectionURL).then(() => {
   console.log("Database connected..");
 });
-//api routes
-app.get("/questions", (req, res) => res.status(200).send("hello world"));
+//ROOT
+app.get("/", (req, res) => {
+  res.send("Welcome to the PeerPrep Questions API!");
+});
+
+//api routes(CRUD Calls)
 app.get("/questions/all", async (req, res) => {
   const questions = await Questions.find({});
   try {
