@@ -41,7 +41,7 @@ cd backend
 npm install
 ```
 
-Once that is done, last step is to get the .env file from a developer and drop it into the `backend` directory
+Once that is done, last step is to get both the `.env` files from a developer and drop it into either the `frontend` or `backend` directory
 
 
 ## Running the application
@@ -66,8 +66,13 @@ npm start
 ```
 
 #WIP IF WE USE FASTAPI #
-This launches the server in development mode and you should see `INFO:     Application startup complete.` displayed.\
-The server is hosted on [http://localhost:8000](http://localhost:8000) and you can see the FastAPI documentation in [http://localhost:8000/docs](http://localhost:8000/docs)
+This launches the server locally and you should see 
+```
+Listening on localhost:8000
+Database connected..
+```
+
+The server is hosted on [http://localhost:8000](http://localhost:8000) and you can see the documentation in [http://localhost:8000/docs](http://localhost:8000/docs) (documentation is WIP)
 
 ## Conclusion
 
