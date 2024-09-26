@@ -11,7 +11,13 @@ interface QuestionModalProps {
 }
 
 const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, onAdd, onEdit }) => {
-  const [formData, setFormData] = useState<Partial<Question>>({});
+  const [formData, setFormData] = useState<Partial<Question>>({
+    qTitle: '',
+    qDescription: '',
+    qCategory: [],
+    qComplexity: '',
+  });
+
 
   useEffect(() => {
     if (question) {
@@ -22,15 +28,29 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, 
         qComplexity: question.qComplexity,
       });
     } else {
-      setFormData({}); // Reset for adding a new question
+      setFormData({
+          qTitle: '',
+          qDescription: '',
+          qCategory: [],
+          qComplexity: '',
+      }); 
     }
   }, [question]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    if (name === 'qCategory') {
+      setFormData({
+        ...formData,
+        qCategory: value ? value.split(',').map(item => item.trim()) : [],
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = () => {
