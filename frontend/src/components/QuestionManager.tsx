@@ -24,16 +24,24 @@ const QuestionManager: React.FC = () => {
     loadQuestions();
   }, []);
 
-  const handleAdd = async (newData: Omit<Question, '_id'>) => {
+  const handleAdd = async (newData: Omit<Question, 'qId'>) => {
     try {
-      const addedQuestion = await addQuestion(newData);
+      let newQId = 1;
+      const existingQId = questions.map(q => q.qId);
+      for (let i = 1; i <= questions.length + 1; i++) {
+        if (!existingQId.includes(i)) {
+          newQId = i; 
+          break; 
+        }
+    }
+      const questionToAdd: Question = { ...newData, qId: newQId }; 
+      const addedQuestion = await addQuestion(questionToAdd);
       setQuestions(prevQuestions => [...prevQuestions, addedQuestion]);
       setOpenModal(false);
     } catch (error) {
       console.error('Failed to add question:', error);
     }
   };
-
   const handleEdit = async (id: string, updatedData: Partial<Question>) => {
     try {
       await editQuestion(id, updatedData);
