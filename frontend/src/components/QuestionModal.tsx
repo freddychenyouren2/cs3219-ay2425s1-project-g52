@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, Button } from '@mui/material';
+import { Modal, Box, TextField, Button, Select, MenuItem, InputLabel } from '@mui/material';
 import { Question } from '../api/interfaces';
 
 interface QuestionModalProps {
@@ -37,7 +37,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, 
     }
   }, [question]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
     if (name === 'qCategory') {
@@ -91,18 +91,26 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, 
           fullWidth
           margin="normal"
         />
-        <TextField
+        <InputLabel sx={{fontSize: '12px'}}>
+          Complexity
+        </InputLabel>
+        <Select
           name="qComplexity"
           label="Complexity"
           value={formData.qComplexity || ''}
-          onChange={handleChange}
+          onChange={(event) => {
+            handleChange(event as unknown as React.ChangeEvent<HTMLSelectElement>);
+          }}
           fullWidth
-          margin="normal"
-        />
-        <Button variant="contained" color="error" onClick={onClose}>
+        >
+          <MenuItem value="Easy">Easy</MenuItem>
+          <MenuItem value="Medium">Medium</MenuItem>
+          <MenuItem value="Hard">Hard</MenuItem>
+        </Select>
+        <Button variant="contained" color="error" onClick={onClose} style={{margin:'4px'}}>
           Cancel
         </Button>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
+        <Button variant="contained" color="primary" onClick={handleSubmit} style={{margin:'4px'}}>
           Save
         </Button>
       </Box>
