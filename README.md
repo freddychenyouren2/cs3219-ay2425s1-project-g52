@@ -25,24 +25,38 @@ then change directory into
 cd cs3219-ay2425s1-project-g52
 ```
 
-## Installing dependancies
-
-Navigate to the front end directory and install the dependencies
+## Installing dependencies
+(FOR MILESTONE 2)
+Navigate to the frontend directory and install the dependencies
 
 ```bash
 cd frontend
 npm install
 ```
 
+Similarly, navigate to the backend question-service directory and install the dependencies
+```bash
+cd ..
+cd backend
+cd question-service
+npm install
+```
+
+Once these are done, last step is to get both the frontend and backend `.env` files from a developer and drop it into the `frontend` and `backend\question-service` directory respectively.
+
 
 ## Running the application
 
-Your app is now ready to run. For proper functionalty, both the client and server must be running.
+The app is now ready to run. For proper functionalty, both the client and server must be running.
 
 ### Frontend
-
-In terminal, navigate to the frontend directory and run
+(FOR MILESTONE 2)
+In terminal, navigate to the frontend directory 
+```bash
+cd frontend
 ```
+Then run
+```bash
 npm start
 ```
 
@@ -51,14 +65,23 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 ### Backend
 
-In another terminal instance, navigate to the backend (question-service) directory and run
+In another terminal instance, navigate to the backend question-service directory 
+```bash
+cd backend
+cd question-service
 ```
+Then run
+```bash
 npm start
 ```
 
-This launches the server in development mode and you should see `INFO:     Application startup complete.` displayed.\
-The server is hosted on [http://localhost:8000](http://localhost:8000) and you can see the FastAPI documentation in [http://localhost:8000/docs](http://localhost:8000/docs)
+This launches the server locally and you should see 
+`Listening on localhost:8000` `Database connected..`
+
+The server is hosted on [http://localhost:8000](http://localhost:8000) and you can see the documentation in [http://localhost:8000/docs](http://localhost:8000/docs) (documentation is WIP)
 
 ## Conclusion
 
-You are now set up locally and can explore the app. You can check out our [developer guide](DeveloperGuide.md) to learn more.
+You are now set up locally and can explore the app. You can check out our [developer guide](DeveloperGuide.md) to learn more. 
+
+Further enhancement to be made in future updates.

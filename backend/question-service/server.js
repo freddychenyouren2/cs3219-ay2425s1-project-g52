@@ -1,97 +1,98 @@
 import express from "express";
 import mongoose from "mongoose";
-import Questions from "./dbQuestions.js";
+import Question from "./questionModel.js";
 import cors from "cors";
+import dotenv from 'dotenv';
+dotenv.config()
 
 //app config
 const app = express();
-const port = process.env.PORT || 9000;
+const port = process.env.PORT || 8000;
 
 //middleware
 app.use(express.json());
 app.use(cors());
 
 //DB Config
-const connectionURL =
-  "mongodb+srv://<Username>:<Password>@cluster0.8ov9w.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-mongoose.connect(connectionURL).then(() => {
-  console.log("Database connected..");
-});
+const connectionURL = process.env.ATLAS_URI || "";
+mongoose.connect(connectionURL)
+  .then(() => console.log("Database connected.."))
+  .catch((e) => {
+    console.error("Database connection failed:", e);
+    process.exit(1);
+  });
+
 //ROOT
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.send("Welcome to the PeerPrep Questions API!");
 });
 
 //api routes(CRUD Calls)
-app.get("/questions/all", async (req, res) => {
-  const questions = await Questions.find({});
+app.get("/api/v1/questions", async (_, res) => {
   try {
-    res.status(200).json({
-      status: "Success",
-      data: {
-        questions,
-      },
-    });
+    const questions = await Question.find({});
+    res.status(200).json(questions);
+
   } catch (err) {
-    res.status(500).json({
-      status: "Failed",
-      message: err,
-    });
+    res.status(500).json({message: err});
   }
 });
 
-app.post("/questions/add-new", async (req, res) => {
-  const question = new Questions(req.body);
+app.get("/api/v1/questions/:id", async (req, res) => {
   try {
+    const question = await Question.findById(req.params.id);;
+
+    if (!question) {
+      return res.status(404).json({ message: 'Question not found.' });
+    }
+
+    res.status(200).json(question);
+  } catch (err) {
+    res.status(500).json({ message: 'An error occurred: ' + err.message });
+  }
+});
+
+app.post("/api/v1/questions", async (req, res) => {
+  try {
+    const question = new Question(req.body);
+
     await question.save();
-    res.status(201).json({
-      status: "Success",
-      data: {
-        question,
-      },
-    });
+    res.status(201).location(`/questions/${question.id}`).json(question);
+
   } catch (err) {
-    res.status(500).json({
-      status: "Failed",
-      message: err,
-    });
+    res.status(500).json({ error: 'An error occurred while adding the question.' + err.message });
   }
 });
 
-app.patch("/questions/update/:id", async (req, res) => {
-  const question = await Questions.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+app.delete("/api/v1/questions/:id", async (req, res) => {
   try {
-    res.status(200).json({
-      status: "Success",
-      data: {
-        question,
-      },
-    });
+    const deletedQuestion = await Question.findByIdAndDelete(req.params.id);
+
+    if (!deletedQuestion) {
+      return res.status(404).json({ error: 'Question not found.' });
+    }
+
+    res.status(204).send();
   } catch (err) {
-    res.status(500).json({
-      status: "Failed",
-      message: err,
-    });
+    res.status(500).json({ error: 'An error occurred while deleting the question:' + err.message});
   }
 });
 
-app.delete("/questions/delete/:id", async (req, res) => {
-  await Questions.findByIdAndDelete(req.params.id);
+app.patch("/api/v1/questions/:id", async (req, res) => {
   try {
-    res.status(204).json({
-      status: "Success",
-      data: {},
+    const question = await Question.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
     });
+
+    if (!question) {
+      return res.status(404).json({message: "Question not found."});
+    }
+
+    res.status(204).send();
   } catch (err) {
-    res.status(500).json({
-      status: "Failed",
-      message: err,
-    });
+    res.status(500).json({ error: 'An error occurred while editing the question:' + err.message});
   }
 });
 
-//listen
 app.listen(port, () => console.log(`Listening on localhost:${port}`));
