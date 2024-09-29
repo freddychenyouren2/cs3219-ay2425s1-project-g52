@@ -42,7 +42,7 @@ cd question-service
 npm install
 ```
 
-Once that is done, last step is to get both the `.env` files from a developer and drop it into either the `frontend` or `backend` directory
+Once these are done, last step is to get both the frontend and backend `.env` files from a developer and drop it into the `frontend` and `backend\question-service` directory respectively.
 
 
 ## Running the application
@@ -50,11 +50,10 @@ Once that is done, last step is to get both the `.env` files from a developer an
 The app is now ready to run. For proper functionalty, both the client and server must be running.
 
 ### Frontend
-
 (FOR MILESTONE 2)
-In terminal, navigate to the frontend question-service directory 
+In terminal, navigate to the frontend directory 
 ```bash
-cd question-service
+cd frontend
 ```
 Then run
 ```bash
@@ -68,9 +67,9 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 In another terminal instance, navigate to the backend question-service directory 
 ```bash
+cd backend
 cd question-service
 ```
-
 Then run
 ```bash
 npm start
