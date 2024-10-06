@@ -25,60 +25,61 @@ then change directory into
 cd cs3219-ay2425s1-project-g52
 ```
 
-## Installing dependencies
-(FOR MILESTONE 2)
-Navigate to the frontend directory and install the dependencies
+## Installing dependencies and running the application
+(FOR MILESTONE 3)
+There is containerization in this milestone with Docker, and there is a `docker-compose.yml` file to facilitate dependency installations and running of app.
 
+Please obtain the frontend and backend `.env` files from a developer and drop it into these directories:
+- `frontend` 
+- `backend\user-service`
+- `backend\question-service` 
+
+After placing the `.env` files, go to the root directory at `cs3219-ay2425s1-project-g52`. 
+
+Build the docker files contained in this project by using the command:
 ```bash
-cd frontend
-npm install
+docker-compose build --no-cache
+```
+OR (For Mac users, you may need to remove the hypen):
+```bash
+docker compose build --no-cache
 ```
 
-Similarly, navigate to the backend question-service directory and install the dependencies
+Spin up the docker-compose for the project with the command:
 ```bash
-cd ..
-cd backend
-cd question-service
-npm install
+docker-compose up
 ```
 
-Once these are done, last step is to get both the frontend and backend `.env` files from a developer and drop it into the `frontend` and `backend\question-service` directory respectively.
-
-
-## Running the application
-
-The app is now ready to run. For proper functionalty, both the client and server must be running.
-
-### Frontend
-(FOR MILESTONE 2)
-In terminal, navigate to the frontend directory 
-```bash
-cd frontend
-```
-Then run
-```bash
-npm start
+OR (For Mac users, you may need to remove the hypen):
+```bash 
+docker compose up
 ```
 
-This launches the app in development mode and you should see `Compiled successfully!` displayed.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+You should see three services being launched by Docker. The following are observable success messages recorded by docker:
 
-### Backend
-
-In another terminal instance, navigate to the backend question-service directory 
-```bash
-cd backend
-cd question-service
+For frontend:
+On successful launch, you should see the message in docker: 
 ```
-Then run
-```bash
-npm start
+frontend-1          | You can now view question-service in the browser.
+frontend-1          |
+frontend-1          |   Local:            http://localhost:3000
+frontend-1          |   On Your Network:  http://172.18.0.3:3000
 ```
 
-This launches the server locally and you should see 
-`Listening on localhost:8000` `Database connected..`
+For Backend User Service:
+On successful launch, you should see the message:
+```
+user-service-1      | MongoDB Connected!
+user-service-1      | User service server listening on http://localhost:3001
+```
 
-The server is hosted on [http://localhost:8000](http://localhost:8000) and you can see the documentation in [http://localhost:8000/docs](http://localhost:8000/docs) (documentation is WIP)
+For Backend question-service:
+On successful launch, you should see the message:
+```
+question-service-1  | Listening on localhost:8000
+question-service-1  | Database connected..
+```
+
 
 ## Conclusion
 
