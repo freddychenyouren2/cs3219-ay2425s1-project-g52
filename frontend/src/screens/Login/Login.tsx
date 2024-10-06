@@ -1,9 +1,49 @@
-import React from "react";
-import { Button, Form, Input, Checkbox } from "antd";
+import React, { useState } from "react";
+import { Button, Form, Input, Modal } from "antd";
 import "./styles.css";
 import logo from "../../assets/images/PeerPrep Logo.png";
+import { userLogin } from "../../api/user-service-api";
 
 const Login: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false); // Manage modal visibility
+  const [modalMessage, setModalMessage] = useState<string>(""); // Store the error message
+
+  const onFinish = async (values: any) => {
+    setLoading(true);
+    const { email, password } = values;
+    try {
+      const response = await userLogin(email, password);
+      console.log(response);
+      if (response) {
+        window.location.href = "/questions";
+      } else {
+        setLoading(false);
+        showErrorModal("Login failed. Please check your credentials.");
+      }
+    } catch (error: any) {
+      console.log(error);
+      setLoading(false);
+      showErrorModal("An error occurred. Please try again.");
+    }
+  };
+
+  const onFinishFailed = (errorInfo: any) => {
+    console.log("Failed:", errorInfo);
+    setLoading(false);
+  };
+
+  // Function to show the error modal
+  const showErrorModal = (message: string) => {
+    setModalMessage(message);
+    setIsModalVisible(true); // Show the modal
+  };
+
+  // Function to handle modal close
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+  };
+
   return (
     <div className="container">
       <div className="header">
@@ -41,8 +81,8 @@ const Login: React.FC = () => {
               initialValues={{ remember: true }}
               className="signup-form"
               style={{ width: "100%" }}
-              // onFinish={onFinish}
-              // onFinishFailed={onFinishFailed}
+              onFinish={onFinish}
+              onFinishFailed={onFinishFailed}
               autoComplete="off"
               layout="vertical"
             >
@@ -81,20 +121,20 @@ const Login: React.FC = () => {
                   marginTop: 50,
                 }}
               >
-                <Form.Item>
+                <Form.Item style={{ width: "80%" }}>
                   <Button
                     type="primary"
                     htmlType="submit"
                     style={{
                       paddingTop: 20,
                       paddingBottom: 20,
-                      paddingRight: 200,
-                      paddingLeft: 200,
+                      width: "100%",
                       backgroundColor: "black",
                       borderRadius: 20,
                       marginRight: 20,
                       fontFamily: "Poppins",
                     }}
+                    loading={loading}
                   >
                     Log in
                   </Button>
@@ -117,13 +157,28 @@ const Login: React.FC = () => {
                     fontSize: 12,
                   }}
                 >
-                  <a>Forgot you password?</a>
+                  <a>Forgot your password?</a>
                 </p>
               </div>
             </Form>
           </div>
         </div>
       </div>
+
+      {/* Error Modal */}
+      <Modal
+        title="Login Failed"
+        open={isModalVisible}
+        onOk={handleModalClose}
+        onCancel={handleModalClose}
+        footer={[
+          <Button key="ok" type="primary" onClick={handleModalClose}>
+            OK
+          </Button>,
+        ]}
+      >
+        <p>{modalMessage}</p>
+      </Modal>
     </div>
   );
 };
