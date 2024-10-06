@@ -32,9 +32,17 @@ const userSignUp = async (
       password: password,
     });
 
-    return response;
-  } catch (error) {
-    console.error("Error during signup:", error);
+    return response; // Return the successful response
+  } catch (error: any) {
+    // Check if the error has a response (comes from the server)
+    if (error.response) {
+      console.error("Error during signup:", error.response);
+      return error.response; // Return the error response from the server
+    } else {
+      // Handle cases where there is no response from the server (e.g., network error)
+      console.error("Error during signup:", error.message);
+      return { error: error.message }; // Return a custom error message
+    }
   }
 };
 
