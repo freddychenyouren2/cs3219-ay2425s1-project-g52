@@ -3,7 +3,7 @@ import { Button, Form, Input, Checkbox } from "antd";
 import "./styles.css";
 import logo from "../../assets/images/PeerPrep Logo.png";
 
-const SignUp: React.FC = () => {
+const Login: React.FC = () => {
   return (
     <div className="container">
       <div className="header">
@@ -16,10 +16,10 @@ const SignUp: React.FC = () => {
             height: 40,
           }}
           onClick={() => {
-            window.location.href = "/";
+            window.location.href = "/signup";
           }}
         >
-          Login
+          Sign up
         </Button>
       </div>
       <div className="body">
@@ -34,28 +34,18 @@ const SignUp: React.FC = () => {
         <div className="RHS">
           <div className="signUpBox">
             <p className="title" style={{ color: "black" }}>
-              Sign up now
+              Login
             </p>
             <Form
               name="signup"
               initialValues={{ remember: true }}
               className="signup-form"
+              style={{ width: "100%" }}
               // onFinish={onFinish}
               // onFinishFailed={onFinishFailed}
               autoComplete="off"
               layout="vertical"
             >
-              {/* Username Field */}
-              <Form.Item
-                label="Username"
-                name="username"
-                rules={[
-                  { required: true, message: "Please input your username!" },
-                ]}
-              >
-                <Input placeholder="Enter your username" size="large" />
-              </Form.Item>
-
               {/* Email Field */}
               <Form.Item
                 label="Email"
@@ -82,83 +72,52 @@ const SignUp: React.FC = () => {
                 />
               </Form.Item>
 
-              {/* Confirm Password Field */}
-              <Form.Item
-                label="Confirm Password"
-                name="confirmPassword"
-                dependencies={["password"]}
-                rules={[
-                  { required: true, message: "Please confirm your password!" },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue("password") === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject(
-                        new Error("The two passwords do not match!")
-                      );
-                    },
-                  }),
-                ]}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  width: "100%",
+                  marginTop: 50,
+                }}
               >
-                <Input.Password
-                  placeholder="Confirm your password"
-                  size="large"
-                />
-              </Form.Item>
-              <Form.Item
-                name="agreement"
-                valuePropName="checked"
-                rules={[
-                  {
-                    validator: (_, value) =>
-                      value
-                        ? Promise.resolve()
-                        : Promise.reject(
-                            "Please agree to the terms and conditions"
-                          ),
-                  },
-                ]}
-              >
-                <Checkbox
-                  style={{
-                    fontFamily: "Poppins",
-                    fontSize: 11,
-                  }}
-                >
-                  By creating an account, I am consenting to receive SMS
-                  messages and emails, and agreeing to our Terms of use &
-                  Privacy Policy
-                </Checkbox>
-              </Form.Item>
-              {/* Submit Button */}
-              <div className="row-container">
                 <Form.Item>
                   <Button
                     type="primary"
                     htmlType="submit"
                     style={{
-                      paddingTop: 15,
-                      paddingBottom: 15,
+                      paddingTop: 20,
+                      paddingBottom: 20,
+                      paddingRight: 200,
+                      paddingLeft: 200,
                       backgroundColor: "black",
                       borderRadius: 20,
                       marginRight: 20,
-                      alignSelf:
-                        "center" /* Ensure the button is vertically aligned */,
+                      fontFamily: "Poppins",
                     }}
                   >
-                    Sign Up
+                    Log in
                   </Button>
                 </Form.Item>
                 <p
                   style={{
-                    alignSelf: "flex-start",
+                    alignSelf: "center",
                     marginTop: 5,
                     fontFamily: "Poppins",
                     fontSize: 12,
                   }}
                 >
-                  Already have an account? <a href="/">Log in</a>
+                  Don't have an account? <a href="/signup">Sign up!</a>
+                </p>
+                <p
+                  style={{
+                    alignSelf: "center",
+                    marginTop: 5,
+                    fontFamily: "Poppins",
+                    fontSize: 12,
+                  }}
+                >
+                  <a>Forgot you password?</a>
                 </p>
               </div>
             </Form>
@@ -169,4 +128,4 @@ const SignUp: React.FC = () => {
   );
 };
 
-export default SignUp;
+export default Login;
