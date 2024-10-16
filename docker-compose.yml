@@ -29,3 +29,25 @@ services:
       - ./backend/question-service/.env
     # volumes: # Not necessarily needed for now
     # networks: # Not necessarily needed for now
+
+  matching-service:
+    build: ./backend/matching-service # Path to the directory containing the Dockerfile for building the backend/question-service image.
+    ports:
+      - 3002:3002
+      - 8080:8080
+    env_file:
+      - ./backend/matching-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 5s
+      timeout: 10s
+      retries: 5

@@ -5,8 +5,7 @@
     "main": "src/index.js",
     "type": "module",
     "scripts": {
-        "start": "docker-compose up -d && node src/index.js",
-        "stop": "docker-compose down"
+        "start": "node src/index.js"
     },
     "dependencies": {
         "amqplib": "^0.8.0",
