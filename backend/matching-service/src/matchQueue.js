@@ -47,7 +47,7 @@ export const addUser = async (user) => {
         updateUser(userMatchRequest.userId, "timeout");
         await UserMatchRequest.deleteOne({ userId: userMatchRequest.userId });
       }
-    }, 60000);
+    }, 30000);
 
     return { success: "User added to match queue" };
   } catch (error) {
