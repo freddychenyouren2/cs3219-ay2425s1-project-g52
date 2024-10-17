@@ -116,10 +116,12 @@ progress::-moz-progress-bar {
   margin-top: 20px;
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .cancel-button:hover {
-  background-color: #ff0000;
+  background-color: #ff8800;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes progressAnimation {

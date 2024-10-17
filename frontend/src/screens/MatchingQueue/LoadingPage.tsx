@@ -83,7 +83,7 @@ const LoadingPage: React.FC = () => {
       console.error("Error cancelling matching request:", error);
     }
 
-    navigate("/topics", { state: { username: userId } });
+    navigate("/topicsPage", { state: { username: userId } });
   };
 
   const handleRetry = async () => {
@@ -118,7 +118,7 @@ const LoadingPage: React.FC = () => {
   };
 
   const handleContinue = () => {
-    navigate("/topics", { state: { userId } });
+    navigate("/topicsPage", { state: { userId } });
   };
 
   return (
@@ -157,7 +157,9 @@ const LoadingPage: React.FC = () => {
         {matchSuccess && (
           <MatchSuccessDialog
             open={matchSuccess}
-            onClose={() => navigate("/topics", { state: { username: userId } })}
+            onClose={() =>
+              navigate("/questionsPage", { state: { username: userId } })
+            }
             onContinue={handleContinue}
           />
         )}
