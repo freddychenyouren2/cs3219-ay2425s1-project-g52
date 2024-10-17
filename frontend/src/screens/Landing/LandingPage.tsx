@@ -15,7 +15,7 @@ const LandingPage: React.FC = () => {
   const usageStreak = 7;
 
   const handleStartSession = () => {
-    navigate("/topics", { state: { username } });
+    navigate("/topicsPage", { state: { username } });
   };
 
   return (

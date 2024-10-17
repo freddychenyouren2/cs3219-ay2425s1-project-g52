@@ -77,7 +77,7 @@ const TopicsPage: React.FC = () => {
       });
 
       if (response.ok) {
-        navigate("/loading", {
+        navigate("/loadingPage", {
           state: {
             userId: username,
             topic: selectedTopic,

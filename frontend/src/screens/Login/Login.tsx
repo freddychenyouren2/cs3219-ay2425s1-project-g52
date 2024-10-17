@@ -18,7 +18,9 @@ const Login: React.FC = () => {
       console.log("API response:", response);
       if (response && response.data && response.data.username) {
         localStorage.setItem("username", response.data.username);
-        navigate("/LandingPg", { state: { username: response.data.username } });
+        navigate("/landingPage", {
+          state: { username: response.data.username },
+        });
       } else {
         setLoading(false);
         showErrorModal("Login failed. Please check your credentials.");
@@ -56,7 +58,7 @@ const Login: React.FC = () => {
             height: 40,
           }}
           onClick={() => {
-            window.location.href = "/signup";
+            window.location.href = "/signupPage";
           }}
         >
           Sign up

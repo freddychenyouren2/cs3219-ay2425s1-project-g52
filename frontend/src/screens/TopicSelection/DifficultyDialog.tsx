@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,14 +10,16 @@ import {
 } from "@mui/material";
 
 const dialogStyles = {
-  backgroundColor: "black",
-  color: "white",
+  backgroundColor: "#f9f9f9",
+  color: "black",
   textAlign: "center" as const,
+  border: "1px solid #ccc",
 };
 
 const buttonStyles = {
-  border: "2px solid white",
-  color: "white",
+  border: "2px solid black",
+  color: "black",
+  backgroundColor: "#e0e0e0",
   width: "100%",
   padding: "15px",
   borderRadius: "10px",
@@ -60,14 +62,20 @@ const DifficultyDialog: React.FC<{
   };
 
   return (
-    <Dialog open={open} onClose={onClose} PaperProps={{ style: dialogStyles }}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      PaperProps={{ style: dialogStyles }}
+      maxWidth="md"
+      fullWidth
+    >
       <DialogTitle>
-        <Typography variant="h6" style={{ color: "white" }}>
+        <Typography variant="h6" style={{ color: "black" }}>
           Choose Your Difficulty Level
         </Typography>
       </DialogTitle>
       <DialogContent>
-        <Box>
+        <Box padding={3}>
           <Button onClick={() => handleSelect(1)} sx={easyButtonStyles}>
             Easy
           </Button>
@@ -82,7 +90,11 @@ const DifficultyDialog: React.FC<{
         </Box>
       </DialogContent>
       <DialogActions style={{ justifyContent: "center" }}>
-        <Button onClick={onClose} variant="outlined" sx={{ color: "white" }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          sx={{ color: "black", borderColor: "black" }}
+        >
           Cancel
         </Button>
       </DialogActions>
