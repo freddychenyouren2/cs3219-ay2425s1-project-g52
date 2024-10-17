@@ -1,0 +1,45 @@
+.topics-page {
+  background-color: #000000;
+  color: #ffffff;
+  padding: 40px 20px;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.search-bar-container {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto 40px auto;
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffffff;
+  font-size: 24px;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 14px 20px 14px 60px;
+  border: none;
+  border-radius: 30px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  font-size: 18px;
+  outline: none;
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+.search-bar::placeholder {
+  color: #bbbbbb;
+}
+
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 200px);
+  grid-gap: 30px;
+  justify-content: center;
+}

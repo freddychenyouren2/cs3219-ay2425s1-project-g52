@@ -21,12 +21,12 @@
 // export default App;
 // src/App.tsx
 import React from "react";
-import LoadingPage from "./screens/MatchingQueue/LoadingPage";
+import TopicsPage from "./screens/TopicSelection/TopicsPage";
 
 const App: React.FC = () => {
   return (
     <div>
-      <LoadingPage />
+      <TopicsPage />
     </div>
   );
 };

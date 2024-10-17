@@ -26,7 +26,10 @@ export const addUser = async (user) => {
     });
     if (checkExisting) {
       console.log(`User ${user.userId} already has an active session.`);
-      updateUser(user.userId, "error: You can only request one session at a time.");
+      updateUser(
+        user.userId,
+        "error: You can only request one session at a time."
+      );
       return { error: "You can only request one session at a time." };
     }
 
@@ -47,7 +50,7 @@ export const addUser = async (user) => {
         updateUser(userMatchRequest.userId, "timeout");
         await UserMatchRequest.deleteOne({ userId: userMatchRequest.userId });
       }
-    }, 60000);
+    }, 30000);
 
     return { success: "User added to match queue" };
   } catch (error) {
@@ -72,4 +75,3 @@ const updateUser = (userId, status) => {
     persistent: true,
   });
 };
-
