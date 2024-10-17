@@ -37,6 +37,36 @@
   color: #bbbbbb;
 }
 
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: #6c757d;
+  border: none;
+  cursor: pointer;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.back-icon {
+  font-size: 48px;
+  color: white;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.back-button:hover {
+  background-color: #5a6268;
+}
+
+.back-button:hover .back-icon {
+  transform: scale(1.1);
+}
+
 .topics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 200px);

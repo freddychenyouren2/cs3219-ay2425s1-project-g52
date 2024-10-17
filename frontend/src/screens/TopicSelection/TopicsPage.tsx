@@ -4,6 +4,7 @@ import TopicCard from "./TopicCard";
 import DifficultyDialog from "./DifficultyDialog";
 import "./TopicsPage.css";
 import { FiSearch } from "react-icons/fi";
+import { FiArrowLeft } from "react-icons/fi";
 
 const topics = [
   "Strings",
@@ -96,6 +97,9 @@ const TopicsPage: React.FC = () => {
 
   return (
     <div className="topics-page">
+      <button onClick={() => navigate(-1)} className="back-button">
+        <FiArrowLeft className="back-icon" />
+      </button>
       <div className="search-bar-container">
         <FiSearch className="search-icon" />
         <input
