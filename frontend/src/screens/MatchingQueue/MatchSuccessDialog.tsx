@@ -12,17 +12,17 @@ import {
 interface Props {
   open: boolean;
   onClose: () => void;
-  onRetry: () => void;
+  onContinue: () => void;
 }
 
-const MatchNotFoundDialog: React.FC<Props> = ({ open, onClose, onRetry }) => {
+const MatchSuccessDialog: React.FC<Props> = ({ open, onClose, onContinue }) => {
   return (
     <Dialog
       open={open}
       onClose={onClose}
       PaperProps={{
         style: {
-          background: "linear-gradient(135deg, #f5f7fa, #c3cfe2)",
+          background: "linear-gradient(135deg, #d4fc79, #96e6a1)",
           borderRadius: "12px",
           padding: "20px",
         },
@@ -39,7 +39,7 @@ const MatchNotFoundDialog: React.FC<Props> = ({ open, onClose, onRetry }) => {
             marginBottom: "10px",
           }}
         >
-          Sorry! No Match Found
+          Match Found!
         </Typography>
       </DialogTitle>
       <DialogContent>
@@ -53,8 +53,8 @@ const MatchNotFoundDialog: React.FC<Props> = ({ open, onClose, onRetry }) => {
             margin: "0 10px",
           }}
         >
-          You can retry the match or exit and choose a different topic or
-          difficulty.
+          You've successfully matched with a peer. You can now proceed to the
+          collaboration space or exit.
         </Typography>
       </DialogContent>
       <DialogActions style={{ justifyContent: "center", padding: "20px 0" }}>
@@ -65,10 +65,10 @@ const MatchNotFoundDialog: React.FC<Props> = ({ open, onClose, onRetry }) => {
           maxWidth="300px"
         >
           <Button
-            onClick={onRetry}
+            onClick={onContinue}
             variant="contained"
             style={{
-              backgroundColor: "#FF6F61",
+              backgroundColor: "#28a745",
               color: "#fff",
               fontSize: "14px",
               fontWeight: 500,
@@ -78,14 +78,14 @@ const MatchNotFoundDialog: React.FC<Props> = ({ open, onClose, onRetry }) => {
               boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
             }}
           >
-            Retry
+            Continue
           </Button>
           <Button
             onClick={onClose}
             variant="outlined"
             style={{
-              borderColor: "#FF6F61",
-              color: "#FF6F61",
+              borderColor: "#28a745",
+              color: "#28a745",
               fontSize: "14px",
               fontWeight: 500,
               textTransform: "none",
@@ -102,4 +102,4 @@ const MatchNotFoundDialog: React.FC<Props> = ({ open, onClose, onRetry }) => {
   );
 };
 
-export default MatchNotFoundDialog;
+export default MatchSuccessDialog;

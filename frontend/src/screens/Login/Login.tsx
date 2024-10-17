@@ -1,28 +1,30 @@
 import React, { useState } from "react";
 import { Button, Form, Input, Modal } from "antd";
+import { useNavigate } from "react-router-dom";
 import "./styles.css";
 import logo from "../../assets/images/PeerPrep Logo.png";
 import { userLogin } from "../../api/user-service-api";
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false); // Manage modal visibility
-  const [modalMessage, setModalMessage] = useState<string>(""); // Store the error message
-
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [modalMessage, setModalMessage] = useState<string>("");
+  const navigate = useNavigate();
   const onFinish = async (values: any) => {
     setLoading(true);
     const { email, password } = values;
     try {
       const response = await userLogin(email, password);
-      console.log(response);
-      if (response) {
-        window.location.href = "/questions";
+      console.log("API response:", response);
+      if (response && response.data && response.data.username) {
+        localStorage.setItem("username", response.data.username);
+        navigate("/LandingPg", { state: { username: response.data.username } });
       } else {
         setLoading(false);
         showErrorModal("Login failed. Please check your credentials.");
       }
     } catch (error: any) {
-      console.log(error);
+      console.error("Login error:", error);
       setLoading(false);
       showErrorModal("An error occurred. Please try again.");
     }
@@ -33,13 +35,11 @@ const Login: React.FC = () => {
     setLoading(false);
   };
 
-  // Function to show the error modal
   const showErrorModal = (message: string) => {
     setModalMessage(message);
-    setIsModalVisible(true); // Show the modal
+    setIsModalVisible(true);
   };
 
-  // Function to handle modal close
   const handleModalClose = () => {
     setIsModalVisible(false);
   };

@@ -18,19 +18,33 @@ let channel;
 app.use(express.json());
 app.use(cors());
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
+const PORT = process.env.MATCHING_SERVICE_PORT || 3002;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 const initialize = async () => {
-  await connectMongoDB();
-  await connectRabbitMQ();
-  channel = getChannel();
-  await initializeMatchQueue();
-  await processMatchRequests();
+  try {
+    await connectMongoDB();
+    await connectRabbitMQ();
+    channel = getChannel();
+    await initializeMatchQueue();
+    await processMatchRequests();
+    console.log("All services initialized successfully");
+  } catch (error) {
+    console.error("Error during initialization:", error);
+  }
 };
 
-initialize().catch(console.error);
+initialize();
 
 initializeWebSocketServer(process.env.WEBSOCKET_PORT || 8080);
 
-// Boolean function for hard matching criteria: topic and difficulty must match
 const meetHardMatchingCriteria = (user1, user2) => {
   return (
     user1.topic === user2.topic &&
@@ -39,7 +53,6 @@ const meetHardMatchingCriteria = (user1, user2) => {
   );
 };
 
-// Boolean function for soft matching criteria: only topic must match
 const meetSoftMatchingCriteria = (user1, user2) => {
   return user1.topic === user2.topic && user1.userId !== user2.userId;
 };
@@ -51,7 +64,6 @@ const processMatchRequests = async () => {
       const matchQueue = await getMatchQueue();
       let matched = false;
 
-      // Matches with hard criteria (same topic and difficulty)
       for (let i = 0; i < matchQueue.length; i++) {
         if (meetHardMatchingCriteria(matchQueue[i], matchRequest)) {
           const user1 = matchQueue[i];
@@ -65,7 +77,6 @@ const processMatchRequests = async () => {
         }
       }
 
-      // Matches with soft criteria (same topic, different difficulty)
       if (!matched) {
         for (let i = 0; i < matchQueue.length; i++) {
           if (meetSoftMatchingCriteria(matchQueue[i], matchRequest)) {
@@ -75,6 +86,7 @@ const processMatchRequests = async () => {
             await removeUser(user2.userId);
             notifyUser(user1.userId, "matched");
             notifyUser(user2.userId, "matched");
+            matched = true;
             break;
           }
         }
@@ -102,7 +114,11 @@ app.post("/match", async (req, res) => {
       console.error("Error adding user:", result.error);
       res.status(400).send(result.error);
     } else {
-      console.log("User added successfully:", result.success);
+      channel.sendToQueue("match_requests", Buffer.from(JSON.stringify(user)));
+      console.log(
+        "User added successfully and match request sent:",
+        result.success
+      );
       res.status(200).send(result.success);
     }
   } catch (error) {
@@ -122,7 +138,13 @@ app.get("/queue", async (req, res) => {
   }
 });
 
-const PORT = process.env.MATCHING_SERVICE_PORT || 3003;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.delete("/match/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    await removeUser(userId);
+    res.status(200).send(`User ${userId} removed from matching queue`);
+  } catch (error) {
+    console.error("Error removing user:", error);
+    res.status(500).send("Internal Server Error");
+  }
 });

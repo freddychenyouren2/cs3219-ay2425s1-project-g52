@@ -11,12 +11,17 @@ const userLogin = async (
       password: password,
     });
 
-    const token = response.data.token;
+    const { token, username } = response.data;
+
+    if (token) {
+      localStorage.setItem("token", token);
+    }
 
     console.log("Login successful:", response.data);
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Error during login:", error);
+    return undefined;
   }
 };
 

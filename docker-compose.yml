@@ -11,7 +11,7 @@ services:
       - ./frontend/.env
     # volumes: # Not necessarily needed for now
     # networks: # Not necessarily needed for now
-     
+
   user-service:
     build: ./backend/user-service # Path to the directory containing the Dockerfile for building the backend/user-service image.
     ports:
