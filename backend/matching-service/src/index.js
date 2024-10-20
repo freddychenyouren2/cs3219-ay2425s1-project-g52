@@ -61,9 +61,10 @@ const processMatchRequests = async () => {
   await channel.consume("match_requests", async (request) => {
     if (request !== null) {
       const matchRequest = JSON.parse(request.content.toString());
+      
       const matchQueue = await getMatchQueue();
       let matched = false;
-
+      console.log("Queue status before match is formed:", matchQueue);
       for (let i = 0; i < matchQueue.length; i++) {
         if (meetHardMatchingCriteria(matchQueue[i], matchRequest)) {
           const user1 = matchQueue[i];
@@ -90,9 +91,13 @@ const processMatchRequests = async () => {
             break;
           }
         }
-      }
+        if (matched) {
+          console.log("Queue status after match is formed:", await getMatchQueue());
+        }
 
-      channel.ack(request);
+        
+        channel.ack(request);
+      }
     }
   });
 
