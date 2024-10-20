@@ -151,7 +151,7 @@ const Login: React.FC = () => {
                     fontSize: 12,
                   }}
                 >
-                  Don't have an account? <a href="/signup">Sign up!</a>
+                  Don't have an account? <a href="/signupPage">Sign up!</a>
                 </p>
                 <p
                   style={{
