@@ -13,6 +13,12 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.log-out-container {
+  padding: 10px;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
 .landing-page-header {
   background-color: #1e1e1e;
   padding: 40px 20px;
