@@ -76,7 +76,7 @@ const LoadingPage: React.FC = () => {
     setProgress(0);
 
     try {
-      await fetch(`http://localhost:3003/match/${userId}`, {
+      await fetch(`http://localhost:3002/match/${userId}`, {
         method: "DELETE",
       });
     } catch (error) {
@@ -98,7 +98,7 @@ const LoadingPage: React.FC = () => {
         difficulty,
       };
 
-      const response = await fetch("http://localhost:3003/match", {
+      const response = await fetch("http://localhost:3002/match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(matchingRequest),
