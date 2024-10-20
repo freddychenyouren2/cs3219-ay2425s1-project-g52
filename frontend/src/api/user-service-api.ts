@@ -14,7 +14,8 @@ const userLogin = async (
     const { token, username } = response.data;
 
     if (token) {
-      localStorage.setItem("token", token);
+      // localStorage.setItem("token", token);
+      sessionStorage.setItem("token", token);
     }
 
     console.log("Login successful:", response.data);

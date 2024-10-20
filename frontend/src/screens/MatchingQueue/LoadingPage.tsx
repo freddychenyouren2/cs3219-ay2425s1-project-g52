@@ -114,7 +114,7 @@ const LoadingPage: React.FC = () => {
 
   const handleDialogClose = () => {
     setDialogOpen(false);
-    navigate("/topics", { state: { username: userId } });
+    navigate("/topicsPage", { state: { username: userId } });
   };
 
   const handleContinue = () => {
@@ -125,7 +125,7 @@ const LoadingPage: React.FC = () => {
     <div className="loading-page">
       <div className="content">
         <h1 className="main-text">
-          Hang tight! A peer match will be found soon.
+          Hang tight {userId}! A peer match will be found soon.
         </h1>
 
         <MagnifyingGlass

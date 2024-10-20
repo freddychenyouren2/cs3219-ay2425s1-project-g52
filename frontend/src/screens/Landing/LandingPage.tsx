@@ -1,9 +1,11 @@
 import React from "react";
+import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
 
 const LandingPage: React.FC = () => {
-  const username = localStorage.getItem("username") || "Guest";
+  // const username = localStorage.getItem("username") || "Guest";
+  const username = sessionStorage.getItem("username") || "Guest";
   const navigate = useNavigate();
 
   const questions = [
@@ -18,8 +20,30 @@ const LandingPage: React.FC = () => {
     navigate("/topicsPage", { state: { username } });
   };
 
+  const handleLogOut = () => {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("username");
+    navigate("/") // Instead of window.location.href
+  }
+
   return (
     <div className="landing-page-container">
+
+      <div className="log-out-container">
+        <Button
+          style={{
+            backgroundColor: "#1D192A",
+            color: "white",
+            borderRadius: 20,
+            width: 75,
+            height: 40,
+          }}
+          onClick={handleLogOut}
+        >
+          Log Out
+        </Button>
+      </div>
+
       <header className="landing-page-header">
         <div className="welcome-section">
           <h1 className="welcome-message">Welcome, {username}</h1>
