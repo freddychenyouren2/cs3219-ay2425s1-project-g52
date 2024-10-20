@@ -12,10 +12,6 @@ export const initializeMatchQueue = async () => {
 
 export const removeUser = async (userId) => {
   await UserMatchRequest.deleteOne({ userId });
-  const message = `{"userId":"${userId}","action":"remove"}`;
-  channel.sendToQueue("match_requests", Buffer.from(message), {
-    persistent: true,
-  });
 };
 
 // Add user to the queue and match it
@@ -36,11 +32,6 @@ export const addUser = async (user) => {
     const userMatchRequest = new UserMatchRequest(user);
     console.log("User added:", userMatchRequest);
     await userMatchRequest.save();
-    channel.sendToQueue(
-      "match_requests",
-      Buffer.from(JSON.stringify(userMatchRequest)),
-      { persistent: true }
-    );
 
     setTimeout(async () => {
       const existingUser = await UserMatchRequest.findOne({
