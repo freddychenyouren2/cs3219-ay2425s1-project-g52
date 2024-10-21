@@ -32,7 +32,6 @@ export const addUser = async (user) => {
     });
     console.log(`User ${user.userId} added to the ${queueName}`);
 
-    // Set a timeout to remove the user after 30 seconds
     setTimeout(async () => {
       await removeUserFromQueue(user, channel);
       notifyUser(user.userId, 'timeout');
@@ -43,27 +42,6 @@ export const addUser = async (user) => {
     console.error("Error adding user to the match queue:", error);
     throw new Error("Failed to add user to the match queue");
   }
-};
-
-const removeUserFromQueueByName = async (userId, queueName, channel) => {
-  const users = await fetchMatchQueue(queueName, channel);
-  const userIndex = users.findIndex(u => u.userId === userId);
-
-  if (userIndex !== -1) {
-    users.splice(userIndex, 1);
-    await channel.purgeQueue(queueName);
-    for (const remainingUser of users) {
-      await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(remainingUser)), {
-        persistent: true,
-      });
-    }
-    console.log(`User ${userId} removed from ${queueName}`);
-  }
-};
-
-const removeUserFromQueue = async (user, channel) => {
-  const queueName = `${user.topic}_${user.difficulty}_queue`;
-  await removeUserFromQueueByName(user.userId, queueName, channel);
 };
 
 const fetchMatchQueue = async (queueName, channel) => {
@@ -98,7 +76,6 @@ const meetSoftMatchingCriteria = (user1, user2) => {
 };
 
 export const checkForMatches = async (matchRequest, topic, channel, difficulties) => {
-  // First check the user's specific difficulty queue
   const specificQueueName = `${topic}_${matchRequest.difficulty}_queue`;
   const specificQueue = await fetchMatchQueue(specificQueueName, channel);
   console.log(`Match queue for ${specificQueueName}:`, specificQueue);
@@ -114,9 +91,8 @@ export const checkForMatches = async (matchRequest, topic, channel, difficulties
     return true;
   }
 
-  // If no match is found, check the other difficulty queues
   for (const difficulty of difficulties) {
-    if (difficulty === matchRequest.difficulty) continue; // Skip the already checked difficulty
+    if (difficulty === matchRequest.difficulty) continue; 
 
     const queueName = `${topic}_${difficulty}_queue`;
     const matchQueue = await fetchMatchQueue(queueName, channel);
@@ -146,13 +122,31 @@ export const requeueUser = async (user, channel) => {
   console.log(`User ${user.userId} requeued to ${queueName}`);
 };
 
-// New function to remove user from specific topic-difficulty queue and topic queue
+const removeUserFromQueueByName = async (userId, queueName, channel) => {
+  const users = await fetchMatchQueue(queueName, channel);
+  const userIndex = users.findIndex(u => u.userId === userId);
+
+  if (userIndex !== -1) {
+    users.splice(userIndex, 1);
+    await channel.purgeQueue(queueName);
+    for (const remainingUser of users) {
+      await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(remainingUser)), {
+        persistent: true,
+      });
+    }
+    console.log(`User ${userId} removed from ${queueName}`);
+  }
+};
+
+const removeUserFromQueue = async (user, channel) => {
+  const queueName = `${user.topic}_${user.difficulty}_queue`;
+  await removeUserFromQueueByName(user.userId, queueName, channel);
+};
+
 export const removeUserFromAllQueues = async (userId, topic, difficulty, channel) => {
-  // Check the topic queue
   const topicQueueName = `${topic}_queue`;
   await removeUserFromQueueByName(userId, topicQueueName, channel);
 
-  // Check the topic-difficulty queue
   const queueName = `${topic}_${difficulty}_queue`;
   await removeUserFromQueueByName(userId, queueName, channel);
 };
