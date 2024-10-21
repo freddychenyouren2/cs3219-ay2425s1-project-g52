@@ -62,11 +62,11 @@ app.post("/match", async (req, res) => {
   console.log("Received user data:", req.body);
   const user = req.body;
   try {
-    const result = await addUser(user);
-    res.status(200).send(result.success);
+    await addUser(user);
+    res.status(200).send("User added to match queue");
   } catch (error) {
     console.error("Error adding user:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(400).send(error.message);
   }
 });
 

@@ -2,13 +2,14 @@ import { getChannel } from "./connections.js";
 import { notifyUser } from './websocket.js';
 import { TOPICS, DIFFICULTIES } from './constants/constants.js';
 
+const activeUsers = new Set();
+
 const notifyMatch = (userId1, userId2) => {
   notifyUser(userId1, 'matched');
   notifyUser(userId2, 'matched');
 };
 
 export const initializeMatchQueue = async (channel) => {
-
   for (const topic of TOPICS) {
     const topicQueueName = `${topic}_queue`;
     await channel.assertQueue(topicQueueName, { durable: true });
@@ -24,6 +25,13 @@ export const initializeMatchQueue = async (channel) => {
 };
 
 export const addUser = async (user) => {
+  if (activeUsers.has(user.userId)) {
+    notifyUser(user.userId, 'Active request exists');
+    throw new Error(`User ${user.userId} already has an active match request`);
+  }
+
+  activeUsers.add(user.userId);
+
   try {
     const queueName = `${user.topic}_queue`;
     const channel = getChannel();
@@ -35,10 +43,12 @@ export const addUser = async (user) => {
     setTimeout(async () => {
       await removeUserFromQueue(user, channel);
       notifyUser(user.userId, 'timeout');
+      activeUsers.delete(user.userId);
     }, 30000);
 
     return { success: `User ${user.userId} added to the ${queueName}` };
   } catch (error) {
+    activeUsers.delete(user.userId);
     console.error("Error adding user to the match queue:", error);
     throw new Error("Failed to add user to the match queue");
   }
@@ -87,6 +97,8 @@ export const checkForMatches = async (matchRequest, topic, channel, difficulties
   if (hardMatch) {
     console.log(`Hard match found: ${hardMatch.userId} with ${matchRequest.userId}`);
     notifyMatch(hardMatch.userId, matchRequest.userId);
+    activeUsers.delete(matchRequest.userId);
+    activeUsers.delete(hardMatch.userId);
     console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(specificQueueName, channel))}`);
     return true;
   }
@@ -105,6 +117,8 @@ export const checkForMatches = async (matchRequest, topic, channel, difficulties
     if (softMatch) {
       console.log(`Soft match found: ${softMatch.userId} with ${matchRequest.userId}`);
       notifyMatch(softMatch.userId, matchRequest.userId);
+      activeUsers.delete(matchRequest.userId);
+      activeUsers.delete(softMatch.userId);
       console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(queueName, channel))}`);
       return true;
     }
@@ -135,6 +149,7 @@ const removeUserFromQueueByName = async (userId, queueName, channel) => {
       });
     }
     console.log(`User ${userId} removed from ${queueName}`);
+    activeUsers.delete(userId);
   }
 };
 
