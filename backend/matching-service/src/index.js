@@ -2,8 +2,8 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { connectRabbitMQ, getChannel } from "./connections.js";
-import { initializeMatchQueue, addUser, checkForMatches } from "./matchQueue.js";
-import { initializeWebSocketServer, notifyUser } from "./websocket.js";
+import { initializeMatchQueue, addUser, checkForMatches, requeueUser } from "./matchQueue.js";
+import { initializeWebSocketServer } from "./websocket.js";
 
 dotenv.config();
 
@@ -13,7 +13,6 @@ app.use(cors());
 
 const PORT = process.env.MATCHING_SERVICE_PORT || 3002;
 initializeWebSocketServer(process.env.WEBSOCKET_PORT || 8080);
-
 
 const initialize = async () => {
   try {
@@ -38,23 +37,22 @@ const processMatchRequests = async (channel) => {
   channel.prefetch(1);
 
   for (const topic of topics) {
-    for (const difficulty of difficulties) {
-      const queueName = `${topic}_${difficulty}_queue`;
-      await channel.consume(queueName, async (request) => {
-        if (request) {
-          const matchRequest = JSON.parse(request.content.toString());
-          console.log(`Received match request: ${JSON.stringify(matchRequest)}`);
-          
-          const matched = await checkForMatches(matchRequest, queueName, channel);
-          if (matched) {
-            channel.ack(request);
-          } else {
-            console.log(`No match found for ${matchRequest.userId} in ${queueName}`);
-            channel.nack(request, false, true);
-          }
+    const queueName = `${topic}_queue`;
+    await channel.consume(queueName, async (request) => {
+      if (request) {
+        const matchRequest = JSON.parse(request.content.toString());
+        console.log(`Received match request: ${JSON.stringify(matchRequest)}`);
+        
+        const matched = await checkForMatches(matchRequest, topic, channel, difficulties);
+        if (matched) {
+          channel.ack(request);
+        } else {
+          console.log(`No match found for ${matchRequest.userId} in ${queueName}`);
+          await requeueUser(matchRequest, channel);
+          channel.ack(request);
         }
-      }, { noAck: false });
-    }
+      }
+    }, { noAck: false });
   }
 };
 
