@@ -72,9 +72,13 @@ app.post("/match", async (req, res) => {
 
 app.delete("/match/:userId", async (req, res) => {
   const { userId } = req.params;
+  const { topic, difficulty } = req.body;
+
+  console.log(`Received DELETE request for userId: ${userId}, topic: ${topic}, difficulty: ${difficulty}`);
+
   try {
-    const channel = getChannel();
-    await removeUserFromAllQueues(userId, channel);
+    const channel = await getChannel();
+    await removeUserFromAllQueues(userId, topic, difficulty, channel);
     res.status(200).send(`User ${userId} removed from all queues`);
   } catch (error) {
     console.error("Error removing user from queues:", error);
