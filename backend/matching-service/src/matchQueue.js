@@ -32,6 +32,13 @@ export const addUser = async (user) => {
       persistent: true,
     });
     console.log(`User ${user.userId} added to the ${queueName}`);
+
+    // Set a timeout to remove the user after 30 seconds
+    setTimeout(async () => {
+      await removeUserFromQueue(user, channel);
+      notifyUser(user.userId, 'timeout');
+    }, 30000);
+
     return { success: `User ${user.userId} added to the ${queueName}` };
   } catch (error) {
     console.error("Error adding user to the match queue:", error);
@@ -39,8 +46,21 @@ export const addUser = async (user) => {
   }
 };
 
-export const removeUser = async (userId, queueName) => {
-  console.log(`Removing user ${userId} from the match queue is not directly supported`);
+const removeUserFromQueue = async (user, channel) => {
+  const queueName = `${user.topic}_${user.difficulty}_queue`;
+  const users = await fetchMatchQueue(queueName, channel);
+  const userIndex = users.findIndex(u => u.userId === user.userId);
+
+  if (userIndex !== -1) {
+    users.splice(userIndex, 1);
+    await channel.purgeQueue(queueName);
+    for (const remainingUser of users) {
+      await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(remainingUser)), {
+        persistent: true,
+      });
+    }
+    console.log(`User ${user.userId} removed from ${queueName} due to timeout`);
+  }
 };
 
 const fetchMatchQueue = async (queueName, channel) => {
@@ -87,8 +107,7 @@ export const checkForMatches = async (matchRequest, topic, channel, difficulties
   if (hardMatch) {
     console.log(`Hard match found: ${hardMatch.userId} with ${matchRequest.userId}`);
     notifyMatch(hardMatch.userId, matchRequest.userId);
-    await removeUser(hardMatch.userId, specificQueueName);
-    await removeUser(matchRequest.userId, specificQueueName);
+    console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(specificQueueName, channel))}`);
     return true;
   }
 
@@ -107,8 +126,7 @@ export const checkForMatches = async (matchRequest, topic, channel, difficulties
     if (softMatch) {
       console.log(`Soft match found: ${softMatch.userId} with ${matchRequest.userId}`);
       notifyMatch(softMatch.userId, matchRequest.userId);
-      await removeUser(softMatch.userId, queueName);
-      await removeUser(matchRequest.userId, queueName);
+      console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(queueName, channel))}`);
       return true;
     }
   }
@@ -123,4 +141,37 @@ export const requeueUser = async (user, channel) => {
     persistent: true,
   });
   console.log(`User ${user.userId} requeued to ${queueName}`);
+};
+
+export const removeUserFromAllQueues = async (userId, channel) => {
+  const topics = ["Data Structures", "Algorithms"];
+  const difficulties = ["easy", "medium", "hard"];
+
+  for (const topic of topics) {
+    // Check the topic queue
+    const topicQueueName = `${topic}_queue`;
+    await removeUserFromQueueByName(userId, topicQueueName, channel);
+
+    // Check the topic-difficulty queues
+    for (const difficulty of difficulties) {
+      const queueName = `${topic}_${difficulty}_queue`;
+      await removeUserFromQueueByName(userId, queueName, channel);
+    }
+  }
+};
+
+const removeUserFromQueueByName = async (userId, queueName, channel) => {
+  const users = await fetchMatchQueue(queueName, channel);
+  const userIndex = users.findIndex(u => u.userId === userId);
+
+  if (userIndex !== -1) {
+    users.splice(userIndex, 1);
+    await channel.purgeQueue(queueName);
+    for (const remainingUser of users) {
+      await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(remainingUser)), {
+        persistent: true,
+      });
+    }
+    console.log(`User ${userId} removed from ${queueName}`);
+  }
 };

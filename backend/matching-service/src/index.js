@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { connectRabbitMQ, getChannel } from "./connections.js";
-import { initializeMatchQueue, addUser, checkForMatches, requeueUser } from "./matchQueue.js";
+import { initializeMatchQueue, addUser, checkForMatches, requeueUser, removeUserFromAllQueues } from "./matchQueue.js";
 import { initializeWebSocketServer } from "./websocket.js";
 
 dotenv.config();
@@ -70,24 +70,15 @@ app.post("/match", async (req, res) => {
   }
 });
 
-app.get("/queue", async (req, res) => {
+
+app.delete("/match/:userId", async (req, res) => {
+  const { userId } = req.params;
   try {
     const channel = getChannel();
-    const topics = ["Data Structures", "Algorithms"];
-    const difficulties = ["easy", "medium", "hard"];
-    const allQueues = {};
-
-    for (const topic of topics) {
-      for (const difficulty of difficulties) {
-        const queueName = `${topic}_${difficulty}_queue`;
-        const users = await fetchMatchQueue(queueName, channel);
-        allQueues[queueName] = users;
-      }
-    }
-
-    res.status(200).json(allQueues);
+    await removeUserFromAllQueues(userId, channel);
+    res.status(200).send(`User ${userId} removed from all queues`);
   } catch (error) {
-    console.error("Error fetching queue contents:", error);
+    console.error("Error removing user from queues:", error);
     res.status(500).send("Internal Server Error");
   }
 });
