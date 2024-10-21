@@ -3,6 +3,7 @@ import { notifyUser } from './websocket.js';
 import { TOPICS, DIFFICULTIES } from './constants/constants.js';
 
 const activeUsers = new Set();
+const userTimeouts = new Map();
 
 const notifyMatch = (userId1, userId2) => {
   notifyUser(userId1, 'matched');
@@ -40,11 +41,19 @@ export const addUser = async (user) => {
     });
     console.log(`User ${user.userId} added to the ${queueName}`);
 
-    setTimeout(async () => {
+    if (userTimeouts.has(user.userId)) {
+      clearTimeout(userTimeouts.get(user.userId));
+    }
+
+    const timeoutId = setTimeout(async () => {
       await removeUserFromQueue(user, channel);
       notifyUser(user.userId, 'timeout');
       activeUsers.delete(user.userId);
+      userTimeouts.delete(user.userId);
+      console.log(`User ${user.userId} removed from activeUsers set due to timeout`);
     }, 30000);
+
+    userTimeouts.set(user.userId, timeoutId);
 
     return { success: `User ${user.userId} added to the ${queueName}` };
   } catch (error) {
