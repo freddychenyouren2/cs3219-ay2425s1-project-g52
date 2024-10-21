@@ -1,3 +1,4 @@
+// websocket.js
 import WebSocket from 'ws';
 
 const ws_clients = new Map();
@@ -21,7 +22,7 @@ const notifyUser = (userId, status) => {
   const ws = ws_clients.get(userId);
   if (ws && ws.readyState === WebSocket.OPEN) {
     const message = `{"userId":"${userId}","status":"${status}"}`;
-    console.log(message)
+    console.log(message);
     ws.send(message);
   }
 };

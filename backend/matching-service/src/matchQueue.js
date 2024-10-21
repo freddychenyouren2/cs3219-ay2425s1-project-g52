@@ -1,68 +1,106 @@
-import { UserMatchRequest } from "./models/UserMatchRequest.js";
 import { getChannel } from "./connections.js";
+import { notifyUser } from './websocket.js';
 
-let channel;
+// When a hard match is found
+const notifyMatch = (userId1, userId2) => {
+  // Notify both users
+  notifyUser(userId1, 'matched');
+  notifyUser(userId2, 'matched');
+};
 
-export const initializeMatchQueue = async () => {
-  channel = getChannel();
-  if (!channel) {
-    throw new Error("No Rabbitmq channel initialized");
+export const initializeMatchQueue = async (channel) => {
+  const topics = ["Data Structures", "Algorithms"];
+  const difficulties = ["easy", "medium", "hard"];
+
+  for (const topic of topics) {
+    for (const difficulty of difficulties) {
+      const queueName = `${topic}_${difficulty}_queue`;
+      await channel.assertQueue(queueName, { durable: true });
+      console.log(`Queue ${queueName} initialized`);
+    }
   }
+  console.log("Match queues initialized");
 };
 
-export const removeUser = async (userId) => {
-  await UserMatchRequest.deleteOne({ userId });
-};
-
-// Add user to the queue and match it
 export const addUser = async (user) => {
   try {
-    const checkExisting = await UserMatchRequest.findOne({
-      userId: user.userId,
+    const queueName = `${user.topic}_${user.difficulty}_queue`;
+    const channel = getChannel();
+    await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(user)), {
+      persistent: true,
     });
-    if (checkExisting) {
-      console.log(`User ${user.userId} already has an active session.`);
-      updateUser(
-        user.userId,
-        "error: You can only request one session at a time."
-      );
-      return { error: "You can only request one session at a time." };
-    }
+    console.log(`User ${user.userId} added to the ${queueName}`);
+    return { success: `User ${user.userId} added to the ${queueName}` };
+  } catch (error) {
+    console.error("Error adding user to the match queue:", error);
+    throw new Error("Failed to add user to the match queue");
+  }
+};
 
-    const userMatchRequest = new UserMatchRequest(user);
-    console.log("User added:", userMatchRequest);
-    await userMatchRequest.save();
+export const removeUser = async (userId, queueName) => {
+  console.log(`Removing user ${userId} from the match queue is not directly supported`);
+};
 
-    setTimeout(async () => {
-      const existingUser = await UserMatchRequest.findOne({
-        userId: userMatchRequest.userId,
-      });
-      if (existingUser) {
-        updateUser(userMatchRequest.userId, "timeout");
-        await UserMatchRequest.deleteOne({ userId: userMatchRequest.userId });
+const fetchMatchQueue = async (queueName, channel) => {
+  const users = [];
+  await new Promise((resolve) => {
+    channel.consume(queueName, (msg) => {
+      if (msg) {
+        users.push(JSON.parse(msg.content.toString()));
+        channel.ack(msg);
       }
-    }, 30000);
-
-    return { success: "User added to match queue" };
-  } catch (error) {
-    console.error("Error in addUser:", error);
-    return { error: "Internal Server Error" };
-  }
-};
-
-// Get the match queue from MongoDB
-export const getMatchQueue = async () => {
-  try {
-    return await UserMatchRequest.find();
-  } catch (error) {
-    console.error("Error in getMatchQueue:", error);
-    throw new Error("Internal Server Error");
-  }
-};
-
-const updateUser = (userId, status) => {
-  const message = `{"userId":"${userId}","status":"${status}"}`;
-  channel.sendToQueue("notifications", Buffer.from(message), {
-    persistent: true,
+    }, { noAck: false }).then((result) => {
+      setTimeout(() => {
+        channel.cancel(result.consumerTag);
+        resolve();
+      }, 1000);
+    });
   });
+  console.log(`Fetched users from ${queueName}:`, users);
+  return users;
+};
+
+const meetHardMatchingCriteria = (user1, user2) => {
+  return (
+    user1.topic === user2.topic &&
+    user1.difficulty === user2.difficulty &&
+    user1.userId !== user2.userId
+  );
+};
+
+const meetSoftMatchingCriteria = (user1, user2) => {
+  return user1.topic === user2.topic && user1.userId !== user2.userId;
+};
+
+
+export const checkForMatches = async (matchRequest, queueName, channel) => {
+  const matchQueue = await fetchMatchQueue(queueName, channel);
+  console.log(`Match queue for ${queueName}:`, matchQueue);
+
+  const hardMatch = matchQueue.find((user) =>
+    meetHardMatchingCriteria(user, matchRequest)
+  );
+
+  if (hardMatch) {
+    console.log(`Hard match found: ${hardMatch.userId} with ${matchRequest.userId}`);
+    notifyMatch(hardMatch.userId, matchRequest.userId, "matched");
+    await removeUser(hardMatch.userId, queueName);
+    await removeUser(matchRequest.userId, queueName);
+    return true;
+  }
+
+  const softMatch = matchQueue.find((user) =>
+    meetSoftMatchingCriteria(user, matchRequest)
+  );
+
+  if (softMatch) {
+    console.log(`Soft match found: ${softMatch.userId} with ${matchRequest.userId}`);
+    notifyMatch(softMatch.userId, matchRequest.userId, "matched");
+    await removeUser(softMatch.userId, queueName);
+    await removeUser(matchRequest.userId, queueName);
+    return true;
+  }
+
+  console.log(`No match found for ${matchRequest.userId} in ${queueName}`);
+  return false;
 };
