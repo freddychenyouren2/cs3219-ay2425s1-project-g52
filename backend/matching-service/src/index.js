@@ -4,6 +4,8 @@ import cors from "cors";
 import { connectRabbitMQ, getChannel } from "./connections.js";
 import { initializeMatchQueue, addUser, checkForMatches, requeueUser, removeUserFromAllQueues } from "./matchQueue.js";
 import { initializeWebSocketServer } from "./websocket.js";
+import { TOPICS, DIFFICULTIES } from './constants/constants.js';
+
 
 dotenv.config();
 
@@ -31,19 +33,17 @@ const initialize = async () => {
 };
 
 const processMatchRequests = async (channel) => {
-  const topics = ["Data Structures", "Algorithms"];
-  const difficulties = ["easy", "medium", "hard"];
 
   channel.prefetch(1);
 
-  for (const topic of topics) {
+  for (const topic of TOPICS) {
     const queueName = `${topic}_queue`;
     await channel.consume(queueName, async (request) => {
       if (request) {
         const matchRequest = JSON.parse(request.content.toString());
         console.log(`Received match request: ${JSON.stringify(matchRequest)}`);
         
-        const matched = await checkForMatches(matchRequest, topic, channel, difficulties);
+        const matched = await checkForMatches(matchRequest, topic, channel, DIFFICULTIES);
         if (matched) {
           channel.ack(request);
         } else {
@@ -69,7 +69,6 @@ app.post("/match", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
 
 app.delete("/match/:userId", async (req, res) => {
   const { userId } = req.params;

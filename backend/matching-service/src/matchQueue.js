@@ -1,5 +1,6 @@
 import { getChannel } from "./connections.js";
 import { notifyUser } from './websocket.js';
+import { TOPICS, DIFFICULTIES } from './constants/constants.js';
 
 const notifyMatch = (userId1, userId2) => {
   notifyUser(userId1, 'matched');
@@ -7,15 +8,13 @@ const notifyMatch = (userId1, userId2) => {
 };
 
 export const initializeMatchQueue = async (channel) => {
-  const topics = ["Data Structures", "Algorithms"];
-  const difficulties = ["easy", "medium", "hard"];
 
-  for (const topic of topics) {
+  for (const topic of TOPICS) {
     const topicQueueName = `${topic}_queue`;
     await channel.assertQueue(topicQueueName, { durable: true });
     console.log(`Queue ${topicQueueName} initialized`);
 
-    for (const difficulty of difficulties) {
+    for (const difficulty of DIFFICULTIES) {
       const difficultyQueueName = `${topic}_${difficulty}_queue`;
       await channel.assertQueue(difficultyQueueName, { durable: true });
       console.log(`Queue ${difficultyQueueName} initialized`);
@@ -46,10 +45,9 @@ export const addUser = async (user) => {
   }
 };
 
-const removeUserFromQueue = async (user, channel) => {
-  const queueName = `${user.topic}_${user.difficulty}_queue`;
+const removeUserFromQueueByName = async (userId, queueName, channel) => {
   const users = await fetchMatchQueue(queueName, channel);
-  const userIndex = users.findIndex(u => u.userId === user.userId);
+  const userIndex = users.findIndex(u => u.userId === userId);
 
   if (userIndex !== -1) {
     users.splice(userIndex, 1);
@@ -59,8 +57,13 @@ const removeUserFromQueue = async (user, channel) => {
         persistent: true,
       });
     }
-    console.log(`User ${user.userId} removed from ${queueName} due to timeout`);
+    console.log(`User ${userId} removed from ${queueName}`);
   }
+};
+
+const removeUserFromQueue = async (user, channel) => {
+  const queueName = `${user.topic}_${user.difficulty}_queue`;
+  await removeUserFromQueueByName(user.userId, queueName, channel);
 };
 
 const fetchMatchQueue = async (queueName, channel) => {
@@ -143,35 +146,13 @@ export const requeueUser = async (user, channel) => {
   console.log(`User ${user.userId} requeued to ${queueName}`);
 };
 
-export const removeUserFromAllQueues = async (userId, channel) => {
-  const topics = ["Data Structures", "Algorithms"];
-  const difficulties = ["easy", "medium", "hard"];
+// New function to remove user from specific topic-difficulty queue and topic queue
+export const removeUserFromAllQueues = async (userId, topic, difficulty, channel) => {
+  // Check the topic queue
+  const topicQueueName = `${topic}_queue`;
+  await removeUserFromQueueByName(userId, topicQueueName, channel);
 
-  for (const topic of topics) {
-    // Check the topic queue
-    const topicQueueName = `${topic}_queue`;
-    await removeUserFromQueueByName(userId, topicQueueName, channel);
-
-    // Check the topic-difficulty queues
-    for (const difficulty of difficulties) {
-      const queueName = `${topic}_${difficulty}_queue`;
-      await removeUserFromQueueByName(userId, queueName, channel);
-    }
-  }
-};
-
-const removeUserFromQueueByName = async (userId, queueName, channel) => {
-  const users = await fetchMatchQueue(queueName, channel);
-  const userIndex = users.findIndex(u => u.userId === userId);
-
-  if (userIndex !== -1) {
-    users.splice(userIndex, 1);
-    await channel.purgeQueue(queueName);
-    for (const remainingUser of users) {
-      await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(remainingUser)), {
-        persistent: true,
-      });
-    }
-    console.log(`User ${userId} removed from ${queueName}`);
-  }
+  // Check the topic-difficulty queue
+  const queueName = `${topic}_${difficulty}_queue`;
+  await removeUserFromQueueByName(userId, queueName, channel);
 };
