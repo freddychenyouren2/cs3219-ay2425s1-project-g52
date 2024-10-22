@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 
 const ws_clients = new Map();
 
-const initializeWebSocketServer = (port) => {
+export async function initializeWebSocketServer(port) {
   const wss = new WebSocket.Server({ port });
 
   wss.on('connection', (ws, req) => {
@@ -15,15 +15,15 @@ const initializeWebSocketServer = (port) => {
   });
 
   console.log(`WebSocket server is running on port ${port}`);
-};
+}
 
-const notifyUser = (userId, status) => {
+export function notifyUser(userId, status) {
   const ws = ws_clients.get(userId);
   if (ws && ws.readyState === WebSocket.OPEN) {
     const message = `{"userId":"${userId}","status":"${status}"}`;
     console.log(message);
     ws.send(message);
   }
-};
+}
 
-export { initializeWebSocketServer, notifyUser, ws_clients };
+export { ws_clients };

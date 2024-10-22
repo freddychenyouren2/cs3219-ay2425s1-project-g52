@@ -1,10 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { connectRabbitMQ, getChannel } from "./connections.js";
-import { initializeMatchQueue, addUser, checkForMatches, requeueUser, removeUserFromAllQueues } from "./matchQueue.js";
-import { initializeWebSocketServer } from "./websocket.js";
-import { TOPICS, DIFFICULTIES } from './constants/constants.js';
+import {connectRabbitMQ, getChannel} from "./connections.js";
+import {addUser, checkForMatches, requeueUser, removeUserFromAllQueues} from "./matchQueue.js";
+import {initializeWebSocketServer} from "./websocket.js";
+import {TOPICS, DIFFICULTIES} from './constants/constants.js';
 
 
 dotenv.config();
@@ -13,37 +13,46 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const PORT = process.env.MATCHING_SERVICE_PORT || 3002;
 initializeWebSocketServer(process.env.WEBSOCKET_PORT || 8080);
 
-const initialize = async () => {
+async function initialize() {
   try {
     await connectRabbitMQ();
     const channel = getChannel();
     await initializeMatchQueue(channel);
     console.log("All services initialized successfully");
     await processMatchRequests(channel);
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
+    app.listen(process.env.MATCHING_SERVICE_PORT);
   } catch (error) {
     console.error("Error during initialization:", error);
     process.exit(1);
   }
-};
+}
 
-const processMatchRequests = async (channel) => {
-
-  channel.prefetch(1);
-
+async function initializeMatchQueue(channel) {
   for (const topic of TOPICS) {
+    const topicQueueName = `${topic}_queue`;
+    await channel.assertQueue(topicQueueName, { durable: true });
+    console.log(`Queue ${topicQueueName} initialized`);
+
+    for (const difficulty of DIFFICULTIES) {
+      const difficultyQueueName = `${topic}_${difficulty}_queue`;
+      await channel.assertQueue(difficultyQueueName, { durable: true });
+      console.log(`Queue ${difficultyQueueName} initialized`);
+    }
+  }
+  console.log("Match queues initialized");
+}
+
+async function processMatchRequests(channel) {
+  channel.prefetch(1);
+  for(const topic of TOPICS) {
     const queueName = `${topic}_queue`;
-    await channel.consume(queueName, async (request) => {
+    await channel.consume(queueName, async function(request) {
       if (request) {
         const matchRequest = JSON.parse(request.content.toString());
-        console.log(`Received match request: ${JSON.stringify(matchRequest)}`);
-        
-        const matched = await checkForMatches(matchRequest, topic, channel, DIFFICULTIES);
+        console.log('Received match request: ', matchRequest);
+        const matched = await checkForMatches(matchRequest, channel);
         if (matched) {
           channel.ack(request);
         } else {
@@ -54,13 +63,14 @@ const processMatchRequests = async (channel) => {
       }
     }, { noAck: false });
   }
-};
+}
 
 initialize();
 
 app.post("/match", async (req, res) => {
   console.log("Received user data:", req.body);
   const user = req.body;
+
   try {
     await addUser(user);
     res.status(200).send("User added to match queue");
@@ -71,9 +81,8 @@ app.post("/match", async (req, res) => {
 });
 
 app.delete("/match/:userId", async (req, res) => {
-  const { userId } = req.params;
-  const { topic, difficulty } = req.body;
-
+  const userId = req.params.userId;
+  const {topic, difficulty} = req.body;
   console.log(`Received DELETE request for userId: ${userId}, topic: ${topic}, difficulty: ${difficulty}`);
 
   try {

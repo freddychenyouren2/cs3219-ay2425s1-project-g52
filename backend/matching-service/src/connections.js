@@ -3,7 +3,7 @@ import amqp from "amqplib";
 let channel;
 let connection;
 
-export const connectRabbitMQ = async () => {
+export async function connectRabbitMQ() {
   try {
     connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://rabbitmq:5672");
     channel = await connection.createChannel();
@@ -12,11 +12,11 @@ export const connectRabbitMQ = async () => {
     console.error("Error connecting to RabbitMQ:", error);
     throw error;
   }
-};
+}
 
-export const getChannel = () => {
+export function getChannel() {
   if (!channel) {
     throw new Error("Channel is not initialized. Please connect first.");
   }
   return channel;
-};
+}
