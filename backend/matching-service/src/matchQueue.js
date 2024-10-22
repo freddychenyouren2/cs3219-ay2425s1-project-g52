@@ -8,6 +8,13 @@ const timeoutTabs = new Map();
 function notifyMatch(userId1, userId2) {
   notifyUser(userId1, 'matched');
   notifyUser(userId2, 'matched');
+};
+
+function removeTimeout(user) {
+  if (userTimeouts.has(user.userId)) {
+    clearTimeout(userTimeouts.get(user.userId));
+    console.log(`Removed Timer for ${user.userId} after Successful match`);
+  }
 }
 
 function handleTimeout(user, channel) {
@@ -78,7 +85,9 @@ export async function checkForMatches(matchRequest, channel) {
 
   if (specificQueue.length > 0) {
     const match = specificQueue[0];
-    console.log(`Match found: ${match.userId} with ${matchRequest.userId}`);
+    console.log(`Hard Match found: ${match.userId} with ${matchRequest.userId}`);
+    removeTimeout(match);
+    removeTimeout(matchRequest);
     notifyMatch(match.userId, matchRequest.userId);
     activeUsers.delete(matchRequest.userId);
     activeUsers.delete(match.userId);
@@ -97,7 +106,9 @@ export async function checkForMatches(matchRequest, channel) {
 
     if (matchQueue.length > 0) {
       const match = matchQueue[0];
-      console.log(`Match found: ${match.userId} with ${matchRequest.userId}`);
+      console.log(`Soft Match found: ${match.userId} with ${matchRequest.userId}`);
+      removeTimeout(match);
+      removeTimeout(matchRequest);
       notifyMatch(match.userId, matchRequest.userId);
       activeUsers.delete(matchRequest.userId);
       activeUsers.delete(match.userId);
