@@ -11,8 +11,8 @@ function notifyMatch(userId1, userId2) {
 };
 
 function removeTimeout(user) {
-  if (userTimeouts.has(user.userId)) {
-    clearTimeout(userTimeouts.get(user.userId));
+  if (timeoutTabs.has(user.userId)) {
+    clearTimeout(timeoutTabs.get(user.userId));
     console.log(`Removed Timer for ${user.userId} after Successful match`);
   }
 }
