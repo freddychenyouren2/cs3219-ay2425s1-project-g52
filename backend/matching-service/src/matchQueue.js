@@ -10,6 +10,13 @@ const notifyMatch = (userId1, userId2) => {
   notifyUser(userId2, 'matched');
 };
 
+export const removeTimeout = (user) => {
+  if (userTimeouts.has(user.userId)) {
+    clearTimeout(userTimeouts.get(user.userId));
+    console.log(`Removed Timer for ${user.userId} after Successful match`)
+  }
+}
+
 export const initializeMatchQueue = async (channel) => {
   for (const topic of TOPICS) {
     const topicQueueName = `${topic}_queue`;
@@ -105,6 +112,8 @@ export const checkForMatches = async (matchRequest, topic, channel, difficulties
 
   if (hardMatch) {
     console.log(`Hard match found: ${hardMatch.userId} with ${matchRequest.userId}`);
+    removeTimeout(hardMatch);
+    removeTimeout(matchRequest);
     notifyMatch(hardMatch.userId, matchRequest.userId);
     activeUsers.delete(matchRequest.userId);
     activeUsers.delete(hardMatch.userId);
@@ -125,9 +134,12 @@ export const checkForMatches = async (matchRequest, topic, channel, difficulties
 
     if (softMatch) {
       console.log(`Soft match found: ${softMatch.userId} with ${matchRequest.userId}`);
+      removeTimeout(softMatch);
+      removeTimeout(matchRequest);
       notifyMatch(softMatch.userId, matchRequest.userId);
       activeUsers.delete(matchRequest.userId);
       activeUsers.delete(softMatch.userId);
+      
       console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(queueName, channel))}`);
       return true;
     }
