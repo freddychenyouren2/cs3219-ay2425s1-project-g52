@@ -4,9 +4,9 @@ import { Stage, Layer, Line, Rect } from "react-konva";
 const Whiteboard = ({ setWhiteBoardOpen, socket, roomId, username }) => {
   const [lines, setLines] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [isErasing, setIsErasing] = useState(false); // To toggle erase mode
+  const [isErasing, setIsErasing] = useState(false);
 
-  const throttleTimeout = useRef(null); // Ref to hold the throttle timeout
+  const throttleTimeout = useRef(null);
 
   // Join the room on component mount
   useEffect(() => {
@@ -14,7 +14,6 @@ const Whiteboard = ({ setWhiteBoardOpen, socket, roomId, username }) => {
       // Join the room with roomId and username
       socket.emit("joinRoom", roomId, username);
 
-      // Listen for errors
       socket.on("error", (error) => {
         console.error("Error:", error.message);
       });
@@ -33,7 +32,7 @@ const Whiteboard = ({ setWhiteBoardOpen, socket, roomId, username }) => {
     if (!throttleTimeout.current) {
       throttleTimeout.current = setTimeout(() => {
         emitDrawingData(updatedLines);
-        throttleTimeout.current = null; // Reset the throttle timeout
+        throttleTimeout.current = null;
       }, 100); // Emit every 100ms
     }
   };
@@ -42,10 +41,9 @@ const Whiteboard = ({ setWhiteBoardOpen, socket, roomId, username }) => {
   useEffect(() => {
     if (socket) {
       socket.on("drawing", (newLines) => {
-        setLines(newLines.lines); // Update the lines when received from the server
+        setLines(newLines.lines);
       });
 
-      // Clean up the socket event listener when component unmounts
       return () => {
         socket.off("drawing");
       };
@@ -69,7 +67,6 @@ const Whiteboard = ({ setWhiteBoardOpen, socket, roomId, username }) => {
     const updatedLines = lines.concat();
     setLines(updatedLines);
 
-    // Throttle the emission of drawing data
     emitThrottledData(updatedLines);
   };
 
@@ -78,14 +75,14 @@ const Whiteboard = ({ setWhiteBoardOpen, socket, roomId, username }) => {
   };
 
   const handleClear = () => {
-    setLines([]); // Clear all lines
+    setLines([]);
     if (socket) {
-      socket.emit("drawing", { roomId, lines: [] }); // Emit clear event to the server
+      socket.emit("drawing", { roomId, lines: [] });
     }
   };
 
   const toggleEraseMode = () => {
-    setIsErasing(!isErasing); // Toggle between draw and erase mode
+    setIsErasing(!isErasing);
   };
 
   return (
@@ -98,7 +95,6 @@ const Whiteboard = ({ setWhiteBoardOpen, socket, roomId, username }) => {
         onMouseUp={handleMouseUp}
       >
         <Layer>
-          {/* White background rectangle */}
           <Rect
             x={0}
             y={0}

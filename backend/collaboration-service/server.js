@@ -108,8 +108,6 @@ io.on("connection", (socket) => {
 
   // Handle real-time drawing
   socket.on("drawing", (data) => {
-    console.log("Drawing data received");
-    console.log(data);
     const { roomId, ...drawingData } = data;
     socket.to(roomId).emit("drawing", drawingData); // Broadcast drawing data to the room
   });

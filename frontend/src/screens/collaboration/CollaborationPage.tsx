@@ -6,7 +6,6 @@ import { useLocation } from "react-router-dom";
 import Whiteboard from "./Whiteboard";
 
 const socketURL = process.env.REACT_APP_COLLABORATION_SERVICE_BASE_URL;
-console.log("socketURL: ", socketURL);
 const socket = io(socketURL);
 
 const CollaborationPage = () => {
@@ -15,8 +14,8 @@ const CollaborationPage = () => {
     return new URLSearchParams(useLocation().search);
   };
   const query = useQuery();
-  const [roomId, setRoomId] = useState(query.get("roomId")); // Get roomId from URL
-  const [username, setUsername] = useState(query.get("username")); // Get username
+  const [roomId, setRoomId] = useState(query.get("roomId"));
+  const [username, setUsername] = useState(query.get("username"));
   useEffect(() => {
     console.log("roomId: ", roomId);
     console.log("username: ", username);
