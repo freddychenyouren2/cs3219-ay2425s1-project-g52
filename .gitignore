@@ -1,7 +1,4 @@
-
-backend/question-service/.env
+docker-compose.yml
 backend/user-service/.env
-frontend/.env
 backend/question-service/.env
-backend/user-service/.env
 frontend/.env

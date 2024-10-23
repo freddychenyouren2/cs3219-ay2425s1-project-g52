@@ -73,12 +73,28 @@ const LoadingPage: React.FC = () => {
 
   const handleCancel = async () => {
     if (intervalIdRef.current) clearInterval(intervalIdRef.current);
+    setDialogOpen(false);
     setProgress(0);
 
     try {
-      await fetch(`http://localhost:3003/match/${userId}`, {
+      const requestBody = {
+        topic,
+        difficulty,
+      };
+
+      const response = await fetch(`http://localhost:3002/match/${userId}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
+
+      if (!response.ok) {
+        console.error("Failed to cancel matching request");
+      } else {
+        console.log(`User ${userId} removed from all queues`);
+      }
     } catch (error) {
       console.error("Error cancelling matching request:", error);
     }
@@ -98,7 +114,7 @@ const LoadingPage: React.FC = () => {
         difficulty,
       };
 
-      const response = await fetch("http://localhost:3003/match", {
+      const response = await fetch("http://localhost:3002/match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(matchingRequest),
@@ -114,18 +130,18 @@ const LoadingPage: React.FC = () => {
 
   const handleDialogClose = () => {
     setDialogOpen(false);
-    navigate("/topics", { state: { username: userId } });
+    navigate("/topicsPage", { state: { username: userId } });
   };
 
   const handleContinue = () => {
-    navigate("/topicsPage", { state: { userId } });
+    navigate("/questionsPage", { state: { userId } });
   };
 
   return (
     <div className="loading-page">
       <div className="content">
         <h1 className="main-text">
-          Hang tight! A peer match will be found soon.
+          Hang tight {userId}! A peer match will be found soon.
         </h1>
 
         <MagnifyingGlass
@@ -157,9 +173,7 @@ const LoadingPage: React.FC = () => {
         {matchSuccess && (
           <MatchSuccessDialog
             open={matchSuccess}
-            onClose={() =>
-              navigate("/questionsPage", { state: { username: userId } })
-            }
+            onClose={handleCancel}
             onContinue={handleContinue}
           />
         )}

@@ -1,77 +1,152 @@
-import { UserMatchRequest } from "./models/UserMatchRequest.js";
-import { getChannel } from "./connections.js";
+import {getChannel} from "./connections.js";
+import {notifyUser} from './websocket.js';
+import {DIFFICULTIES} from './constants/constants.js';
 
-let channel;
+const activeUsers = new Set();
+const timeoutTabs = new Map();
 
-export const initializeMatchQueue = async () => {
-  channel = getChannel();
-  if (!channel) {
-    throw new Error("No Rabbitmq channel initialized");
+function notifyMatch(userId1, userId2) {
+  notifyUser(userId1, 'matched');
+  notifyUser(userId2, 'matched');
+};
+
+function removeTimeout(user) {
+  if (timeoutTabs.has(user.userId)) {
+    clearTimeout(timeoutTabs.get(user.userId));
+    console.log(`Removed Timer for ${user.userId} after Successful match`);
   }
-};
+}
 
-export const removeUser = async (userId) => {
-  await UserMatchRequest.deleteOne({ userId });
-  const message = `{"userId":"${userId}","action":"remove"}`;
-  channel.sendToQueue("match_requests", Buffer.from(message), {
-    persistent: true,
-  });
-};
+function handleTimeout(user, channel) {
+  const userId = user.userId;
+  if (timeoutTabs.has(userId)) {
+    clearTimeout(timeoutTabs.get(userId));
+  }
 
-// Add user to the queue and match it
-export const addUser = async (user) => {
+  const timeoutId = setTimeout(async () => {
+    await removeUserFromQueue(user, channel);
+    notifyUser(userId, 'timeout');
+    activeUsers.delete(userId);
+    timeoutTabs.delete(userId);
+    console.log(`User ${userId} removed from activeUsers set due to timeout`);
+  }, 30000);
+
+  timeoutTabs.set(userId, timeoutId);
+}
+
+export async function addUser(user) {
+  const userId = user.userId;
+  if (activeUsers.has(userId)) {
+    notifyUser(user.userId, 'Active request exists');
+    throw new Error(`User ${userId} already has an active match request`);
+  }
+  activeUsers.add(userId);
+
   try {
-    const checkExisting = await UserMatchRequest.findOne({
-      userId: user.userId,
-    });
-    if (checkExisting) {
-      console.log(`User ${user.userId} already has an active session.`);
-      updateUser(
-        user.userId,
-        "error: You can only request one session at a time."
-      );
-      return { error: "You can only request one session at a time." };
-    }
+    const queueName = `${user.topic}_queue`;
+    const channel = getChannel();
+    await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(user)));
+    console.log(`User ${userId} added to the ${queueName}`);
 
-    const userMatchRequest = new UserMatchRequest(user);
-    console.log("User added:", userMatchRequest);
-    await userMatchRequest.save();
-    channel.sendToQueue(
-      "match_requests",
-      Buffer.from(JSON.stringify(userMatchRequest)),
-      { persistent: true }
-    );
+    handleTimeout(user, channel);
+    return { success: `User ${userId} added to the ${queueName}` };
+  } catch (error) {
+    activeUsers.delete(userId);
+    console.error("Error adding user to the match queue:", error);
+    throw new Error("Failed to add user to the match queue");
+  }
+}
 
-    setTimeout(async () => {
-      const existingUser = await UserMatchRequest.findOne({
-        userId: userMatchRequest.userId,
-      });
-      if (existingUser) {
-        updateUser(userMatchRequest.userId, "timeout");
-        await UserMatchRequest.deleteOne({ userId: userMatchRequest.userId });
+async function fetchMatchQueue(queueName, channel) {
+  const users = [];
+  await new Promise((resolve) => {
+    channel.consume(queueName, (matchRequest) => {
+      if (matchRequest) {
+        users.push(JSON.parse(matchRequest.content.toString()));
+        channel.ack(matchRequest);
       }
-    }, 30000);
-
-    return { success: "User added to match queue" };
-  } catch (error) {
-    console.error("Error in addUser:", error);
-    return { error: "Internal Server Error" };
-  }
-};
-
-// Get the match queue from MongoDB
-export const getMatchQueue = async () => {
-  try {
-    return await UserMatchRequest.find();
-  } catch (error) {
-    console.error("Error in getMatchQueue:", error);
-    throw new Error("Internal Server Error");
-  }
-};
-
-const updateUser = (userId, status) => {
-  const message = `{"userId":"${userId}","status":"${status}"}`;
-  channel.sendToQueue("notifications", Buffer.from(message), {
-    persistent: true,
+    }, { noAck: false }).then((result) => {
+      setTimeout(() => {
+        channel.cancel(result.consumerTag);
+        resolve();
+      }, 1000);
+    });
   });
-};
+  console.log(`Fetched users from ${queueName}:`, users);
+  return users;
+}
+
+export async function checkForMatches(matchRequest, channel) {
+  const topic = matchRequest.topic;
+  const difficulty = matchRequest.difficulty;
+  const specificQueueName = `${topic}_${difficulty}_queue`;
+  const specificQueue = await fetchMatchQueue(specificQueueName, channel);
+  console.log(`Match queue for ${specificQueueName}:`, specificQueue);
+
+  if (specificQueue.length > 0) {
+    const match = specificQueue[0];
+    console.log(`Hard Match found: ${match.userId} with ${matchRequest.userId}`);
+    removeTimeout(match);
+    removeTimeout(matchRequest);
+    notifyMatch(match.userId, matchRequest.userId);
+    activeUsers.delete(matchRequest.userId);
+    activeUsers.delete(match.userId);
+    console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(specificQueueName, channel))}`);
+    return true;
+  }
+
+  for (const difficulty of DIFFICULTIES) {
+    if (difficulty === matchRequest.difficulty) {
+      continue;
+    } 
+
+    const queueName = `${topic}_${difficulty}_queue`;
+    const matchQueue = await fetchMatchQueue(queueName, channel);
+    console.log(`Match queue for ${queueName}:`, matchQueue);
+
+    if (matchQueue.length > 0) {
+      const match = matchQueue[0];
+      console.log(`Soft Match found: ${match.userId} with ${matchRequest.userId}`);
+      removeTimeout(match);
+      removeTimeout(matchRequest);
+      notifyMatch(match.userId, matchRequest.userId);
+      activeUsers.delete(matchRequest.userId);
+      activeUsers.delete(match.userId);
+      console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(queueName, channel))}`);
+      return true;
+    }
+  }
+
+  console.log(`No match found for ${matchRequest.userId} in any difficulty queue for topic ${topic}`);
+  return false;
+}
+
+export async function requeueUser(user, channel) {
+  const queueName = `${user.topic}_${user.difficulty}_queue`;
+  await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(user)));
+  console.log(`User ${user.userId} requeued to ${queueName}`);
+}
+
+async function removeUserFromQueueByName(userId, queueName, channel) {
+  const users = await fetchMatchQueue(queueName, channel);
+  for (const user of users) {
+    if (user.userId !== userId) {
+      await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(user)));
+    }
+  }
+  console.log(`User ${userId} removed from ${queueName}`);
+  activeUsers.delete(userId);
+}
+
+async function removeUserFromQueue(user, channel) {
+  const queueName = `${user.topic}_${user.difficulty}_queue`;
+  await removeUserFromQueueByName(user.userId, queueName, channel);
+}
+
+export async function removeUserFromAllQueues(userId, topic, difficulty, channel) {
+  const topicQueueName = `${topic}_queue`;
+  await removeUserFromQueueByName(userId, topicQueueName, channel);
+
+  const queueName = `${topic}_${difficulty}_queue`;
+  await removeUserFromQueueByName(userId, queueName, channel);
+}

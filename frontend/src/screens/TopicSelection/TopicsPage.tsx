@@ -35,7 +35,8 @@ interface LocationState {
 const TopicsPage: React.FC = () => {
   const location = useLocation();
   const state = location.state as LocationState | undefined;
-  const username = state?.username || "Guest";
+  // const username = state?.username || "Guest";
+  const username = sessionStorage.getItem("username") || "Guest";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
@@ -97,7 +98,7 @@ const TopicsPage: React.FC = () => {
 
   return (
     <div className="topics-page">
-      <button onClick={() => navigate(-1)} className="back-button">
+      <button onClick={() => navigate("/landingPage")} className="back-button">
         <FiArrowLeft className="back-icon" />
       </button>
       <div className="search-bar-container">

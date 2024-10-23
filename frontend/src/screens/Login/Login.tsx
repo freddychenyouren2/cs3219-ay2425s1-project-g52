@@ -10,6 +10,7 @@ const Login: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
   const [modalMessage, setModalMessage] = useState<string>("");
   const navigate = useNavigate();
+
   const onFinish = async (values: any) => {
     setLoading(true);
     const { email, password } = values;
@@ -17,7 +18,8 @@ const Login: React.FC = () => {
       const response = await userLogin(email, password);
       console.log("API response:", response);
       if (response && response.data && response.data.username) {
-        localStorage.setItem("username", response.data.username);
+        // localStorage.setItem("username", response.data.username);
+        sessionStorage.setItem("username", response.data.username);
         navigate("/landingPage", {
           state: { username: response.data.username },
         });
