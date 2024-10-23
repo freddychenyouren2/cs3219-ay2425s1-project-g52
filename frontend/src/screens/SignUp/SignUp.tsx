@@ -185,9 +185,10 @@ const SignUp: React.FC = () => {
                     }}
                     loading={loading}
                   >
-                    Sign Up
+                    Finish
                   </Button>
                 </Form.Item>
+                <br/>
                 <p
                   style={{
                     alignSelf: "flex-start",
