@@ -36,7 +36,7 @@ Please obtain the frontend and backend `.env` files from a developer and drop it
 
 After placing the `.env` files, go to the root directory at `cs3219-ay2425s1-project-g52`. 
 
-Build the docker files contained in this project by using the command:
+Ensure docker is running, then build the docker files in this project with the command:
 ```bash
 docker-compose build --no-cache
 ```
@@ -55,10 +55,12 @@ OR (For Mac users, you may need to remove the hypen):
 docker compose up
 ```
 
-You should see three services being launched by Docker. The following are observable success messages recorded by docker:
+Peerprep is now ready to be used locally, you can find it in http://localhost:3000/
+
+Alternatively, you can verify that the services have been launched by Docker with the following success messages:
 
 For frontend:
-On successful launch, you should see the message in docker: 
+On successful launch:
 ```
 frontend-1          | You can now view question-service in the browser.
 frontend-1          |
@@ -67,14 +69,14 @@ frontend-1          |   On Your Network:  http://172.18.0.3:3000
 ```
 
 For Backend User Service:
-On successful launch, you should see the message:
+On successful launch:
 ```
 user-service-1      | MongoDB Connected!
 user-service-1      | User service server listening on http://localhost:3001
 ```
 
 For Backend question-service:
-On successful launch, you should see the message:
+On successful launch:
 ```
 question-service-1  | Listening on localhost:8000
 question-service-1  | Database connected..
