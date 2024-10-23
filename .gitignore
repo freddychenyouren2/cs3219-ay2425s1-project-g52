@@ -1,4 +1,1 @@
 docker-compose.yml
-backend/user-service/.env
-backend/question-service/.env
-frontend/.env
