@@ -1,14 +1,24 @@
-import {getChannel} from "./connections.js";
-import {notifyUser} from './websocket.js';
-import {DIFFICULTIES} from './constants/constants.js';
+import { getChannel } from "./connections.js";
+import { notifyUser } from "./websocket.js";
+import { DIFFICULTIES } from "./constants/constants.js";
+import { createRoom, testPostRequest } from "./api/collaboration-api.js";
 
 const activeUsers = new Set();
 const timeoutTabs = new Map();
 
-function notifyMatch(userId1, userId2) {
-  notifyUser(userId1, 'matched');
-  notifyUser(userId2, 'matched');
-};
+async function notifyMatch(userId1, userId2) {
+  try {
+    // const response = await createRoom({ participants: [userId1, userId2] });
+    const response = await testPostRequest();
+    const response2 = await createRoom({ participants: [userId1, userId2] });
+    console.log("Response from createRoom:", response);
+    console.log("Response from createRoom:", response2);
+    notifyUser(userId1, "matched");
+    notifyUser(userId2, "matched");
+  } catch (error) {
+    console.error("Error in notifyMatch:", error);
+  }
+}
 
 function removeTimeout(user) {
   if (timeoutTabs.has(user.userId)) {
@@ -25,7 +35,7 @@ function handleTimeout(user, channel) {
 
   const timeoutId = setTimeout(async () => {
     await removeUserFromQueue(user, channel);
-    notifyUser(userId, 'timeout');
+    notifyUser(userId, "timeout");
     activeUsers.delete(userId);
     timeoutTabs.delete(userId);
     console.log(`User ${userId} removed from activeUsers set due to timeout`);
@@ -37,7 +47,7 @@ function handleTimeout(user, channel) {
 export async function addUser(user) {
   const userId = user.userId;
   if (activeUsers.has(userId)) {
-    notifyUser(user.userId, 'Active request exists');
+    notifyUser(user.userId, "Active request exists");
     throw new Error(`User ${userId} already has an active match request`);
   }
   activeUsers.add(userId);
@@ -60,17 +70,23 @@ export async function addUser(user) {
 async function fetchMatchQueue(queueName, channel) {
   const users = [];
   await new Promise((resolve) => {
-    channel.consume(queueName, (matchRequest) => {
-      if (matchRequest) {
-        users.push(JSON.parse(matchRequest.content.toString()));
-        channel.ack(matchRequest);
-      }
-    }, { noAck: false }).then((result) => {
-      setTimeout(() => {
-        channel.cancel(result.consumerTag);
-        resolve();
-      }, 1000);
-    });
+    channel
+      .consume(
+        queueName,
+        (matchRequest) => {
+          if (matchRequest) {
+            users.push(JSON.parse(matchRequest.content.toString()));
+            channel.ack(matchRequest);
+          }
+        },
+        { noAck: false }
+      )
+      .then((result) => {
+        setTimeout(() => {
+          channel.cancel(result.consumerTag);
+          resolve();
+        }, 1000);
+      });
   });
   console.log(`Fetched users from ${queueName}:`, users);
   return users;
@@ -85,20 +101,26 @@ export async function checkForMatches(matchRequest, channel) {
 
   if (specificQueue.length > 0) {
     const match = specificQueue[0];
-    console.log(`Hard Match found: ${match.userId} with ${matchRequest.userId}`);
+    console.log(
+      `Hard Match found: ${match.userId} with ${matchRequest.userId}`
+    );
     removeTimeout(match);
     removeTimeout(matchRequest);
     notifyMatch(match.userId, matchRequest.userId);
     activeUsers.delete(matchRequest.userId);
     activeUsers.delete(match.userId);
-    console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(specificQueueName, channel))}`);
+    console.log(
+      `Queue after match: ${JSON.stringify(
+        await fetchMatchQueue(specificQueueName, channel)
+      )}`
+    );
     return true;
   }
 
   for (const difficulty of DIFFICULTIES) {
     if (difficulty === matchRequest.difficulty) {
       continue;
-    } 
+    }
 
     const queueName = `${topic}_${difficulty}_queue`;
     const matchQueue = await fetchMatchQueue(queueName, channel);
@@ -106,18 +128,26 @@ export async function checkForMatches(matchRequest, channel) {
 
     if (matchQueue.length > 0) {
       const match = matchQueue[0];
-      console.log(`Soft Match found: ${match.userId} with ${matchRequest.userId}`);
+      console.log(
+        `Soft Match found: ${match.userId} with ${matchRequest.userId}`
+      );
       removeTimeout(match);
       removeTimeout(matchRequest);
       notifyMatch(match.userId, matchRequest.userId);
       activeUsers.delete(matchRequest.userId);
       activeUsers.delete(match.userId);
-      console.log(`Queue after match: ${JSON.stringify(await fetchMatchQueue(queueName, channel))}`);
+      console.log(
+        `Queue after match: ${JSON.stringify(
+          await fetchMatchQueue(queueName, channel)
+        )}`
+      );
       return true;
     }
   }
 
-  console.log(`No match found for ${matchRequest.userId} in any difficulty queue for topic ${topic}`);
+  console.log(
+    `No match found for ${matchRequest.userId} in any difficulty queue for topic ${topic}`
+  );
   return false;
 }
 
@@ -143,7 +173,12 @@ async function removeUserFromQueue(user, channel) {
   await removeUserFromQueueByName(user.userId, queueName, channel);
 }
 
-export async function removeUserFromAllQueues(userId, topic, difficulty, channel) {
+export async function removeUserFromAllQueues(
+  userId,
+  topic,
+  difficulty,
+  channel
+) {
   const topicQueueName = `${topic}_queue`;
   await removeUserFromQueueByName(userId, topicQueueName, channel);
 

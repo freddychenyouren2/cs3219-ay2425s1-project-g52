@@ -20,7 +20,7 @@ mongoose
 
 app.use(
   cors({
-    origin: frontendURL,
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
   })
@@ -44,8 +44,11 @@ const Room = require("./models/Room");
 
 // Create a new room with two participants
 app.post("/create-room", async (req, res) => {
+  console.log("req:", req);
   const { roomId, participants } = req.body;
-
+  console.log("roomId", roomId);
+  console.log("part", participants);
+  console.log("api called");
   try {
     // Check if room already exists
     let existingRoom = await Room.findOne({ roomId });

@@ -34,7 +34,7 @@ const CollaborationPage = () => {
     return (
       <Box
         sx={{
-          pt: 8,
+          pt: 1,
           px: 4,
           pb: 4,
           height: "100vh",
