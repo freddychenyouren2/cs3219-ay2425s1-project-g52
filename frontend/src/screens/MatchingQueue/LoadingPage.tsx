@@ -23,6 +23,7 @@ const LoadingPage: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [matchSuccess, setMatchSuccess] = useState<boolean>(false);
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(null);
 
   const startProgress = useCallback(() => {
     if (intervalIdRef.current) clearInterval(intervalIdRef.current);
@@ -54,6 +55,9 @@ const LoadingPage: React.FC = () => {
 
       if (data.status === "matched") {
         setMatchSuccess(true);
+        console.log("Match found!");
+        console.log(data.roomId);
+        setRoomId(data.roomId);
         if (intervalIdRef.current) clearInterval(intervalIdRef.current);
       } else if (data.status === "timeout") {
         setDialogOpen(true);
@@ -135,6 +139,7 @@ const LoadingPage: React.FC = () => {
 
   const handleContinue = () => {
     navigate("/questionsPage", { state: { userId } });
+    navigate("/collaboration", { state: { roomId: roomId, username: userId } });
   };
 
   return (

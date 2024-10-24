@@ -13,13 +13,10 @@ const CollaborationPage = () => {
   const [whiteboardOpen, setWhiteboardOpen] = useState(false);
   const [whiteboardSize, setWhiteboardSize] = useState({ width: 0, height: 0 });
   const whiteboardContainerRef = useRef<HTMLDivElement>(null);
-
-  const useQuery = () => {
-    return new URLSearchParams(useLocation().search);
-  };
-  const query = useQuery();
-  const [roomId, setRoomId] = useState(query.get("roomId"));
-  const [username, setUsername] = useState(query.get("username"));
+  const location = useLocation();
+  console.log(location);
+  const username = location?.state.username;
+  const roomId = location?.state.roomId;
 
   useEffect(() => {
     if (socket) {

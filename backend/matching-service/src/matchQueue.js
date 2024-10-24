@@ -12,15 +12,15 @@ const timeoutTabs = new Map();
 
 async function notifyMatch(userId1, userId2) {
   try {
-    // const response = await createRoom({ participants: [userId1, userId2] });
-    const response = await testPostRequest();
-    const response2 = await createRoom({ participants: [userId1, userId2] });
-    const response3 = await checkRoomExists("room123");
+    const response = await createRoom({ participants: [userId1, userId2] });
     console.log("Response from testPostRequest:", response);
-    console.log("Response from createRoom:", response2);
-    console.log("Response from checkRoomExists:", response3);
-    notifyUser(userId1, "matched");
-    notifyUser(userId2, "matched");
+    if (response.status == 201) {
+      const roomId = response.room?.roomId;
+      notifyUser(userId1, "matched", roomId);
+      notifyUser(userId2, "matched", roomId);
+    } else {
+      console.error("Error creating room:", response.message);
+    }
   } catch (error) {
     console.error("Error in notifyMatch:", error);
   }

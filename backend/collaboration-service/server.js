@@ -47,16 +47,22 @@ app.post("/create-room", async (req, res) => {
     // Check if room already exists
     let existingRoom = await Room.findOne({ roomId });
     if (existingRoom) {
-      return res.status(400).json({ message: "Room already exists" });
+      return res
+        .status(400)
+        .json({ message: "Room already exists", status: 400 });
     }
 
     const newRoom = new Room({ roomId, participants });
     await newRoom.save();
-    return res.status(201).json({ message: "Room created", room: newRoom });
-  } catch (err) {
     return res
-      .status(500)
-      .json({ message: "Error creating room", error: err.message });
+      .status(201)
+      .json({ message: "Room created", room: newRoom, status: 201 });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Error creating room",
+      error: err.message,
+      status: 500,
+    });
   }
 });
 

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 
 // Function to create a room
 const createRoom = async ({ participants }) => {
-  const url = "http://localhost:4000/create-room";
+  const url = process.env.COLLABORATION_SERVICE_URL;
   console.log("url:", url);
   const requestBody = {
     roomId: uuidv4(),
@@ -20,7 +20,7 @@ const createRoom = async ({ participants }) => {
       },
     });
 
-    console.log("response", response.data);
+    console.log("response", response);
 
     // Return the response data
     return response.data;
