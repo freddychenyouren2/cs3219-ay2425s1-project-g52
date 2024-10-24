@@ -1,7 +1,11 @@
 import { getChannel } from "./connections.js";
 import { notifyUser } from "./websocket.js";
 import { DIFFICULTIES } from "./constants/constants.js";
-import { createRoom, testPostRequest } from "./api/collaboration-api.js";
+import {
+  createRoom,
+  testPostRequest,
+  checkRoomExists,
+} from "./api/collaboration-api.js";
 
 const activeUsers = new Set();
 const timeoutTabs = new Map();
@@ -11,8 +15,10 @@ async function notifyMatch(userId1, userId2) {
     // const response = await createRoom({ participants: [userId1, userId2] });
     const response = await testPostRequest();
     const response2 = await createRoom({ participants: [userId1, userId2] });
-    console.log("Response from createRoom:", response);
+    const response3 = await checkRoomExists("room123");
+    console.log("Response from testPostRequest:", response);
     console.log("Response from createRoom:", response2);
+    console.log("Response from checkRoomExists:", response3);
     notifyUser(userId1, "matched");
     notifyUser(userId2, "matched");
   } catch (error) {

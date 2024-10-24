@@ -1,9 +1,10 @@
-import fetch from "node-fetch";
+import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 
+// Function to create a room
 const createRoom = async ({ participants }) => {
   const url = "http://localhost:4000/create-room";
-  console.log("url: ", url);
+  console.log("url:", url);
   const requestBody = {
     roomId: uuidv4(),
     participants: participants,
@@ -12,51 +13,70 @@ const createRoom = async ({ participants }) => {
   console.log("requestBody", JSON.stringify(requestBody));
 
   try {
-    const response = await fetch(url, {
-      method: "POST",
+    // Making POST request using axios
+    const response = await axios.post(url, requestBody, {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody),
     });
 
-    console.log("response", response);
+    console.log("response", response.data);
 
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log("Room created:", data);
-    return data;
+    // Return the response data
+    return response.data;
   } catch (error) {
     console.error("Error creating room:", error.message);
     return { status: 500, message: error.message };
   }
 };
 
+// Function to test POST request to an external API
 const testPostRequest = async () => {
-  const url = "https://jsonplaceholder.typicode.com/posts";
+  const url = "http://localhost:8000/api/v1/questions";
   const requestBody = {
-    title: "foo",
-    body: "bar",
-    userId: 1,
+    qId: "99",
+    qTitle: "test",
+    qDescription: "test",
+    qCategory: ["Strings"],
+    qComplexity: "easy",
   };
 
   try {
-    const response = await fetch(url, {
-      method: "POST",
+    // Making POST request using axios
+    const response = await axios.post(url, requestBody, {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody),
     });
 
-    const data = await response.json();
-    console.log("Response from JSONPlaceholder:", data);
+    console.log("Response from the API:", response.data);
+    return response.data;
   } catch (error) {
     console.error("Error making POST request:", error.message);
   }
 };
 
-export { createRoom, testPostRequest };
+// Function to check if a room exists
+const checkRoomExists = async (roomId) => {
+  const url = `http://localhost:4000/room-exists/${roomId}`;
+  console.log("Checking room existence with URL:", url);
+
+  try {
+    // Making GET request using axios
+    const response = await axios.get(url, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("response", response.data);
+
+    // Return the response data
+    return response.data;
+  } catch (error) {
+    console.error("Error checking room existence:", error.message);
+    return { status: 500, message: error.message };
+  }
+};
+
+export { createRoom, testPostRequest, checkRoomExists };

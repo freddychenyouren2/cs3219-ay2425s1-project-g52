@@ -18,13 +18,7 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-    credentials: true,
-  })
-);
+app.use(cors());
 app.use(express.json());
 
 // Serve the React app (if needed)
@@ -44,7 +38,7 @@ const Room = require("./models/Room");
 
 // Create a new room with two participants
 app.post("/create-room", async (req, res) => {
-  console.log("req:", req);
+  console.log("req:", req.body);
   const { roomId, participants } = req.body;
   console.log("roomId", roomId);
   console.log("part", participants);
@@ -66,13 +60,35 @@ app.post("/create-room", async (req, res) => {
   }
 });
 
-// Join a room and handle real-time drawing
+// Get room details by roomId (Check if room exists)
+app.get("/room-exists/:roomId", async (req, res) => {
+  const { roomId } = req.params;
+
+  try {
+    // Find room by roomId
+    let room = await Room.findOne({ roomId });
+    if (room) {
+      // If room exists, return a positive response
+      return res.status(200).json({ exists: true, room });
+    } else {
+      // If room doesn't exist, return a negative response
+      return res.status(200).json({ exists: false });
+    }
+  } catch (err) {
+    // Catch and return errors
+    return res
+      .status(500)
+      .json({ message: "Error checking room", error: err.message });
+  }
+});
+
+// Handle Socket.IO connections
 io.on("connection", (socket) => {
   console.log("A user connected");
 
+  // Join room event
   socket.on("joinRoom", async (roomId, username) => {
     try {
-      // Find the room by ID
       const room = await Room.findOne({ roomId });
       if (!room) {
         console.log("Room does not exist");
@@ -80,7 +96,7 @@ io.on("connection", (socket) => {
         return;
       }
 
-      // Ensure room has exactly two participants
+      // Check if the room is full
       if (
         room.participants.length >= 2 &&
         !room.participants.includes(username)
@@ -89,7 +105,7 @@ io.on("connection", (socket) => {
         return;
       }
 
-      // Add user to the room participants
+      // Add user to the room
       if (!room.participants.includes(username)) {
         room.participants.push(username);
         await room.save();
@@ -99,7 +115,7 @@ io.on("connection", (socket) => {
       socket.join(roomId);
       console.log(`${username} joined room: ${roomId}`);
 
-      // Notify other users in the room
+      // Notify other users in the room that a user joined
       socket.to(roomId).emit("userJoined", { username });
     } catch (err) {
       socket.emit("error", {
@@ -115,6 +131,21 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("drawing", drawingData); // Broadcast drawing data to the room
   });
 
+  // Handle real-time chat messages
+  socket.on("sendMessage", (messageData) => {
+    const { roomId, username, text, timestamp } = messageData;
+
+    // Broadcast the message to everyone else in the room
+    io.to(roomId).emit("receiveMessage", {
+      username,
+      text,
+      timestamp,
+    });
+
+    console.log(`Message from ${username} in room ${roomId}: ${text}`);
+  });
+
+  // Handle disconnect
   socket.on("disconnect", () => {
     console.log("User disconnected");
   });
