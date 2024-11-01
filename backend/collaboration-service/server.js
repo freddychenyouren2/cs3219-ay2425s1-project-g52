@@ -39,7 +39,7 @@ const Room = require("./models/Room");
 // Create a new room with two participants
 app.post("/create-room", async (req, res) => {
   console.log("req:", req.body);
-  const { roomId, participants } = req.body;
+  const { roomId, participants, question } = req.body;
   console.log("roomId", roomId);
   console.log("part", participants);
   console.log("api called");
@@ -52,7 +52,7 @@ app.post("/create-room", async (req, res) => {
         .json({ message: "Room already exists", status: 400 });
     }
 
-    const newRoom = new Room({ roomId, participants });
+    const newRoom = new Room({ roomId, participants, question });
     await newRoom.save();
     return res
       .status(201)

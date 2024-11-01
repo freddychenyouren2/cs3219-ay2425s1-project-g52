@@ -11,6 +11,10 @@ const RoomSchema = new Schema({
     type: [String], // List of user IDs (could be usernames)
     required: true,
   },
+  question: {
+    type: Object,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
