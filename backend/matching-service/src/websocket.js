@@ -30,7 +30,7 @@ export function notifyUser(userId, status, roomId = undefined) {
     }
     const message = JSON.stringify(messageObject);
 
-    console.log(message);
+    console.log("message sent to user:", message);
     ws.send(message);
   }
 }

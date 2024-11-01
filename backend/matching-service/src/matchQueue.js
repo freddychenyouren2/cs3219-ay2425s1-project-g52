@@ -6,13 +6,26 @@ import {
   testPostRequest,
   checkRoomExists,
 } from "./api/collaboration-api.js";
+import { getQuestion } from "./api/question-service-api.js";
 
 const activeUsers = new Set();
 const timeoutTabs = new Map();
 
-async function notifyMatch(userId1, userId2) {
+const capitalizeFirstLetter = (str) => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+async function notifyMatch(userId1, userId2, topic, difficulty) {
   try {
-    const response = await createRoom({ participants: [userId1, userId2] });
+    const question = await getQuestion(
+      topic,
+      capitalizeFirstLetter(difficulty)
+    );
+    console.log("Question fetched:", question);
+    const response = await createRoom({
+      participants: [userId1, userId2],
+      question: question,
+    });
     console.log("Response from testPostRequest:", response);
     if (response.status == 201) {
       const roomId = response.room?.roomId;
@@ -98,6 +111,18 @@ async function fetchMatchQueue(queueName, channel) {
   return users;
 }
 
+function selectLowerDifficulty(difficulty1, difficulty2) {
+  // Define the difficulties in order of increasing difficulty
+  const difficulties = ["easy", "medium", "hard"];
+
+  // Get the index of each difficulty
+  const index1 = difficulties.indexOf(difficulty1.toLowerCase());
+  const index2 = difficulties.indexOf(difficulty2.toLowerCase());
+
+  // Return the lower difficulty based on the index
+  return index1 < index2 ? difficulty1 : difficulty2;
+}
+
 export async function checkForMatches(matchRequest, channel) {
   const topic = matchRequest.topic;
   const difficulty = matchRequest.difficulty;
@@ -112,7 +137,7 @@ export async function checkForMatches(matchRequest, channel) {
     );
     removeTimeout(match);
     removeTimeout(matchRequest);
-    notifyMatch(match.userId, matchRequest.userId);
+    notifyMatch(match.userId, matchRequest.userId, topic, difficulty);
     activeUsers.delete(matchRequest.userId);
     activeUsers.delete(match.userId);
     console.log(
@@ -137,9 +162,19 @@ export async function checkForMatches(matchRequest, channel) {
       console.log(
         `Soft Match found: ${match.userId} with ${matchRequest.userId}`
       );
+      console.log("inside soft match");
+      console.log("match", match);
+      console.log("matchRequest", matchRequest);
+      const matchDifficulty = match.difficulty;
+      const matchRequestDifficulty = matchRequest.difficulty;
+      const selectedDifficulty = selectLowerDifficulty(
+        matchDifficulty,
+        matchRequestDifficulty
+      );
+
       removeTimeout(match);
       removeTimeout(matchRequest);
-      notifyMatch(match.userId, matchRequest.userId);
+      notifyMatch(match.userId, matchRequest.userId, topic, selectedDifficulty);
       activeUsers.delete(matchRequest.userId);
       activeUsers.delete(match.userId);
       console.log(

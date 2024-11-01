@@ -10,8 +10,9 @@ const RoomSchema = new mongoose.Schema({
     type: [String], // List of user IDs (could be usernames)
     required: true,
   },
-  codeEditor: {
-    type: String, default: "" 
+  question: {
+    type: Object,
+    required: true,
   },
   createdAt: {
     type: Date,

@@ -2,12 +2,14 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 
 // Function to create a room
-const createRoom = async ({ participants }) => {
+const createRoom = async ({ participants, question }) => {
+  console.log("question:", question);
   const url = process.env.COLLABORATION_SERVICE_URL;
   console.log("url:", url);
   const requestBody = {
     roomId: uuidv4(),
     participants: participants,
+    question: question,
   };
 
   console.log("requestBody", JSON.stringify(requestBody));
@@ -19,8 +21,6 @@ const createRoom = async ({ participants }) => {
         "Content-Type": "application/json",
       },
     });
-
-    console.log("response", response);
 
     // Return the response data
     return response.data;
@@ -49,7 +49,6 @@ const testPostRequest = async () => {
       },
     });
 
-    console.log("Response from the API:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error making POST request:", error.message);
@@ -68,8 +67,6 @@ const checkRoomExists = async (roomId) => {
         "Content-Type": "application/json",
       },
     });
-
-    console.log("response", response.data);
 
     // Return the response data
     return response.data;
