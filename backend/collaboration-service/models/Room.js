@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const RoomSchema = new Schema({
+const RoomSchema = new mongoose.Schema({
   roomId: {
     type: String,
     required: true,
@@ -10,6 +9,9 @@ const RoomSchema = new Schema({
   participants: {
     type: [String], // List of user IDs (could be usernames)
     required: true,
+  },
+  codeEditor: {
+    type: String, default: "" 
   },
   createdAt: {
     type: Date,

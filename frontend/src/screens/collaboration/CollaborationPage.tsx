@@ -1,6 +1,6 @@
 import { Box, Typography, Button } from "@mui/material";
 import CodeEditor from "./CodeEditor";
-import React, { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import { useLocation } from "react-router-dom";
 import Whiteboard from "./Whiteboard";
@@ -93,7 +93,7 @@ const CollaborationPage = () => {
             overflow: "auto",
           }}
         >
-          <CodeEditor />
+          <CodeEditor roomId={roomId} />
         </Box>
 
         <Box

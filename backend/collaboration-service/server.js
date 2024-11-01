@@ -4,12 +4,14 @@ dotenv.config();
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+const WebSocket = require("ws");
+const { setupWSConnection } = require("y-websocket/bin/utils");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const app = express();
 const server = http.createServer(app);
 const connectionURL = process.env.ATLAS_URI || "";
-const cors = require("cors");
 const frontendURL = process.env.frontendURL || "http://localhost:3000";
 
 // Connect to MongoDB
@@ -21,8 +23,23 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
-// Serve the React app (if needed)
-app.use(express.static("client/build"));
+// WebSocket server for Yjs
+const wss = new WebSocket.Server({ noServer: true });
+
+// Handle WebSocket upgrade requests
+server.on("upgrade", (request, socket, head) => {
+  const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
+
+  if (pathname.startsWith("/yjs")) {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      const roomId = pathname.split("/")[2]; // Extract room ID from the path
+      setupWSConnection(ws, request, { room: roomId });
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
 const io = socketIo(server, {
   cors: {
     origin: frontendURL,
@@ -30,33 +47,26 @@ const io = socketIo(server, {
     credentials: true,
   },
 });
+
 // Start the server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+// Room Model
 const Room = require("./models/Room");
 
-// Create a new room with two participants
+// Create a new room with participants
 app.post("/create-room", async (req, res) => {
-  console.log("req:", req.body);
   const { roomId, participants } = req.body;
-  console.log("roomId", roomId);
-  console.log("part", participants);
-  console.log("api called");
   try {
-    // Check if room already exists
     let existingRoom = await Room.findOne({ roomId });
     if (existingRoom) {
-      return res
-        .status(400)
-        .json({ message: "Room already exists", status: 400 });
+      return res.status(400).json({ message: "Room already exists", status: 400 });
     }
 
     const newRoom = new Room({ roomId, participants });
     await newRoom.save();
-    return res
-      .status(201)
-      .json({ message: "Room created", room: newRoom, status: 201 });
+    return res.status(201).json({ message: "Room created", room: newRoom, status: 201 });
   } catch (err) {
     return res.status(500).json({
       message: "Error creating room",
@@ -71,17 +81,13 @@ app.get("/room-exists/:roomId", async (req, res) => {
   const { roomId } = req.params;
 
   try {
-    // Find room by roomId
     let room = await Room.findOne({ roomId });
     if (room) {
-      // If room exists, return a positive response
       return res.status(200).json({ exists: true, room });
     } else {
-      // If room doesn't exist, return a negative response
       return res.status(200).json({ exists: false });
     }
   } catch (err) {
-    // Catch and return errors
     return res
       .status(500)
       .json({ message: "Error checking room", error: err.message });
