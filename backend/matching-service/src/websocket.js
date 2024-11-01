@@ -17,7 +17,7 @@ export async function initializeWebSocketServer(port) {
   console.log(`WebSocket server is running on port ${port}`);
 }
 
-export function notifyUser(userId, status, roomId = undefined) {
+export function notifyUser(userId, status, roomData = undefined) {
   const ws = ws_clients.get(userId);
   if (ws && ws.readyState === WebSocket.OPEN) {
     const messageObject = {
@@ -25,8 +25,9 @@ export function notifyUser(userId, status, roomId = undefined) {
       status: status,
     };
 
-    if (roomId !== undefined) {
-      messageObject.roomId = roomId;
+    if (roomData !== undefined) {
+      messageObject.roomId = roomData.roomId;
+      messageObject.question = roomData.question;
     }
     const message = JSON.stringify(messageObject);
 

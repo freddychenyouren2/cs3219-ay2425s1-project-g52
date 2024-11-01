@@ -29,8 +29,9 @@ async function notifyMatch(userId1, userId2, topic, difficulty) {
     console.log("Response from testPostRequest:", response);
     if (response.status == 201) {
       const roomId = response.room?.roomId;
-      notifyUser(userId1, "matched", roomId);
-      notifyUser(userId2, "matched", roomId);
+      const roomData = response.room;
+      notifyUser(userId1, "matched", roomData);
+      notifyUser(userId2, "matched", roomData);
     } else {
       console.error("Error creating room:", response.message);
     }

@@ -17,6 +17,7 @@ const CollaborationPage = () => {
   console.log(location);
   const username = location?.state.username;
   const roomId = location?.state.roomId;
+  const question = location?.state.question;
 
   useEffect(() => {
     if (socket) {
@@ -65,14 +66,14 @@ const CollaborationPage = () => {
           component="h3"
           sx={{ fontWeight: 700, color: "white" }}
         >
-          Two Sum
+          {question.qTitle}
         </Typography>
         <Typography
-          variant="h4"
-          component="h4"
+          variant="body1"
+          component="body"
           sx={{ fontWeight: 700, color: "gray" }}
         >
-          Sum two things lol
+          {question.qDescription}
         </Typography>
       </Box>
 
