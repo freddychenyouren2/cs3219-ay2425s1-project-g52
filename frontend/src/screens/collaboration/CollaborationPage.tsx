@@ -5,6 +5,7 @@ import io from "socket.io-client";
 import { useLocation } from "react-router-dom";
 import Whiteboard from "./Whiteboard";
 import ChatBox from "./Chatbox";
+import VideoChat from "./VideoChat";
 
 const socketURL = process.env.REACT_APP_COLLABORATION_SERVICE_BASE_URL;
 const socket = io(socketURL);
@@ -113,6 +114,7 @@ const CollaborationPage = () => {
               justifyContent: "center",
               alignItems: "center",
               position: "relative",
+              overflow: "hidden",
             }}
             ref={whiteboardContainerRef}
           >
@@ -126,9 +128,10 @@ const CollaborationPage = () => {
                 height={whiteboardSize.height}
               />
             ) : (
-              <Button onClick={() => setWhiteboardOpen(true)}>
-                Whiteboard here
-              </Button>
+              // <Button onClick={() => setWhiteboardOpen(true)}>
+              //   Whiteboard here
+              // </Button>
+              <VideoChat socket={socket} username={username}></VideoChat>
             )}
           </Box>
 

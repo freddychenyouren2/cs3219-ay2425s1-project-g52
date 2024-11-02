@@ -28,7 +28,8 @@ const wss = new WebSocket.Server({ noServer: true });
 
 // Handle WebSocket upgrade requests
 server.on("upgrade", (request, socket, head) => {
-  const pathname = new URL(request.url, `http://${request.headers.host}`).pathname;
+  const pathname = new URL(request.url, `http://${request.headers.host}`)
+    .pathname;
 
   if (pathname.startsWith("/yjs")) {
     wss.handleUpgrade(request, socket, head, (ws) => {
@@ -65,12 +66,16 @@ app.post("/create-room", async (req, res) => {
   try {
     let existingRoom = await Room.findOne({ roomId });
     if (existingRoom) {
-      return res.status(400).json({ message: "Room already exists", status: 400 });
+      return res
+        .status(400)
+        .json({ message: "Room already exists", status: 400 });
     }
 
     const newRoom = new Room({ roomId, participants, question });
     await newRoom.save();
-    return res.status(201).json({ message: "Room created", room: newRoom, status: 201 });
+    return res
+      .status(201)
+      .json({ message: "Room created", room: newRoom, status: 201 });
   } catch (err) {
     return res.status(500).json({
       message: "Error creating room",
@@ -97,6 +102,8 @@ app.get("/room-exists/:roomId", async (req, res) => {
       .json({ message: "Error checking room", error: err.message });
   }
 });
+
+const roomParticipants = {};
 
 // Handle Socket.IO connections
 io.on("connection", (socket) => {
@@ -130,6 +137,30 @@ io.on("connection", (socket) => {
       // Join the Socket.IO room
       socket.join(roomId);
       console.log(`${username} joined room: ${roomId}`);
+
+      if (!roomParticipants[roomId]) {
+        const people = [];
+        people.push(username);
+        roomParticipants[roomId] = people;
+      } else {
+        if (!roomParticipants[roomId].includes(username)) {
+          roomParticipants[roomId].push(username);
+        }
+      }
+      console.log("roomParticipants", roomParticipants);
+      console.log(
+        `Room ${roomId} has ${roomParticipants[roomId]} participants`
+      );
+
+      if (roomParticipants[roomId].length === 2) {
+        // Send a message to the frontend
+        io.to(roomId).emit("roomFull", {
+          message: "Room is now full and ready!",
+          roomId: roomId,
+          participants: roomParticipants[roomId],
+        });
+        console.log(`Room ${roomId} is now full`);
+      }
 
       // Notify other users in the room that a user joined
       socket.to(roomId).emit("userJoined", { username });
