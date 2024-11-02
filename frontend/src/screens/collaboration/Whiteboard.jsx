@@ -13,8 +13,10 @@ const Whiteboard = ({
   username,
   width,
   height,
+  savedLines,
+  setSavedLines,
 }) => {
-  const [lines, setLines] = useState([]);
+  const [lines, setLines] = useState(savedLines || []);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
   const [currentColor, setCurrentColor] = useState("black"); // Default color is black
@@ -100,6 +102,23 @@ const Whiteboard = ({
     setIsErasing(false); // Turn off erasing when changing color
     handleClose(); // Close the menu after selecting a color
   };
+
+  const closeWhiteboard = () => {
+    console.log("lines", lines);
+    console.log("username", username);
+    setSavedLines(lines);
+    socket.emit("toggleWhiteboardOff", roomId); // Send roomId directly, not as an object
+  };
+
+  useEffect(() => {
+    socket.on("closeWhiteboard", () => {
+      console.log("Closing whiteboard");
+      setWhiteBoardOpen(false);
+    });
+    return () => {
+      socket.off("closeWhiteboard");
+    };
+  }, [socket]);
 
   return (
     <div style={{ position: "relative", width, height }}>
@@ -187,7 +206,7 @@ const Whiteboard = ({
         </IconButton>
 
         {/* Close Whiteboard Icon */}
-        <IconButton onClick={() => setWhiteBoardOpen(false)} color="default">
+        <IconButton onClick={closeWhiteboard} color="default">
           <CloseIcon />
         </IconButton>
       </div>

@@ -118,21 +118,13 @@ const CollaborationPage = () => {
             }}
             ref={whiteboardContainerRef}
           >
-            {whiteboardOpen ? (
-              <Whiteboard
-                setWhiteBoardOpen={setWhiteboardOpen}
-                socket={socket}
-                roomId={roomId}
-                username={username}
-                width={whiteboardSize.width}
-                height={whiteboardSize.height}
-              />
-            ) : (
-              // <Button onClick={() => setWhiteboardOpen(true)}>
-              //   Whiteboard here
-              // </Button>
-              <VideoChat socket={socket} username={username}></VideoChat>
-            )}
+            <VideoChat
+              socket={socket}
+              username={username}
+              roomId={roomId}
+              width={whiteboardSize.width}
+              height={whiteboardSize.height}
+            ></VideoChat>
           </Box>
 
           <Box

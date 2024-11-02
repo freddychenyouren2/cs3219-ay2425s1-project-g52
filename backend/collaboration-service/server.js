@@ -192,6 +192,19 @@ io.on("connection", (socket) => {
     console.log(`Message from ${username} in room ${roomId}: ${text}`);
   });
 
+  //Handle whiteboard being opened
+  socket.on("toggleWhiteboardOn", (roomId) => {
+    // Broadcast to everyone in the room
+    console.log(`Opening whiteboard for room: ${roomId}`);
+    io.to(roomId).emit("openWhiteboard");
+  });
+
+  socket.on("toggleWhiteboardOff", (roomId) => {
+    // Broadcast to everyone in the room
+    console.log(`Closing whiteboard for room: ${roomId}`);
+    io.to(roomId).emit("closeWhiteboard");
+  });
+
   // Handle disconnect
   socket.on("disconnect", () => {
     console.log("User disconnected");
