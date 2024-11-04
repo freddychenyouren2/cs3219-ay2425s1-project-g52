@@ -13,8 +13,8 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
     const updateDimensions = () => {
       if (containerRef.current) {
         setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight,
+          width: containerRef.current.clientWidth, // Use clientWidth for better accuracy
+          height: containerRef.current.clientHeight,
         });
       }
     };
@@ -28,15 +28,18 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
   }, []);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', backgroundColor: 'white' }}>
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', backgroundColor: 'white', overflow: 'hidden' }} // Ensure overflow hidden
+    >
       <Stage width={dimensions.width} height={dimensions.height}>
         <Layer>
           <Rect x={0} y={0} width={dimensions.width} height={dimensions.height} fill="white" />
           {state.map((line: any, i: number) => (
             <Line
-                key={i}
-                points={line.points}
-                stroke={line.color || "black"}
+              key={i}
+              points={line.points}
+              stroke={line.color || "black"}
             />
           ))}
         </Layer>

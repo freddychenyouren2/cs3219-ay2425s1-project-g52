@@ -81,7 +81,7 @@ const QuestionAttemptPage: React.FC = () => {
           alignItems: "center",
           mb: 2,
           width: "100%",
-          maxWidth: "900px",
+          justifyContent: "flex-start",
         }}
       >
         <ToggleButtonGroup
@@ -139,6 +139,7 @@ const QuestionAttemptPage: React.FC = () => {
         <Box
           sx={{
             flex: 1,
+            maxWidth: "550px",
             height: "100%",
             overflow: "auto",
           }}
