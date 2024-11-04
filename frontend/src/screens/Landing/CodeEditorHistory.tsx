@@ -11,6 +11,7 @@ const CodeEditorHistory: React.FC<CodeEditorHistoryProps> = ({ code }) => {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Initialise the Code editor
     if (editorRef.current) {
       const view = new EditorView({
         doc: code,

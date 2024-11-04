@@ -9,11 +9,11 @@ const QuestionAttemptPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { question } = location.state;
-  const [view, setView] = useState<'attempt' | 'solution'>('attempt');
+  const [codeContent, setCodeContent] = useState<'attempt' | 'solution'>('attempt');
 
-  const handleViewChange = (event: React.MouseEvent<HTMLElement>, newView: 'attempt' | 'solution') => {
-    if (newView !== null) {
-      setView(newView);
+  const handleCodeContentChange = (event: React.MouseEvent<HTMLElement>, newCodeContent: 'attempt' | 'solution') => {
+    if (newCodeContent !== null) {
+      setCodeContent(newCodeContent);
     }
   };
 
@@ -85,17 +85,15 @@ const QuestionAttemptPage: React.FC = () => {
         }}
       >
         <ToggleButtonGroup
-          value={view}
+          value={codeContent}
           exclusive
-          onChange={handleViewChange}
-          aria-label="view toggle"
+          onChange={handleCodeContentChange}
         >
           <ToggleButton
             value="attempt"
-            aria-label="attempt"
             sx={{
               color: "white",
-              backgroundColor: view === 'attempt' ? "#3a3a3a" : "#5a5a5a",
+              backgroundColor: codeContent === 'attempt' ? "#3a3a3a" : "#5a5a5a",
               '&.Mui-selected': {
                 backgroundColor: "#3a3a3a",
                 color: "white",
@@ -109,10 +107,9 @@ const QuestionAttemptPage: React.FC = () => {
           </ToggleButton>
           <ToggleButton
             value="solution"
-            aria-label="solution"
             sx={{
               color: "white",
-              backgroundColor: view === 'solution' ? "#3a3a3a" : "#5a5a5a",
+              backgroundColor: codeContent === 'solution' ? "#3a3a3a" : "#5a5a5a",
               '&.Mui-selected': {
                 backgroundColor: "#3a3a3a",
                 color: "white",
@@ -144,7 +141,7 @@ const QuestionAttemptPage: React.FC = () => {
             overflow: "auto",
           }}
         >
-          <CodeEditorHistory code={view === 'attempt' ? question.code_contents : question.solution_code} />
+          <CodeEditorHistory code={codeContent === 'attempt' ? question.code_contents : question.solution_code} />
         </Box>
 
         <Box

@@ -18,7 +18,7 @@ interface QuestionAttempt {
 }
 
 const QuestionHistory: React.FC = () => {
-  const [questions, setQuestions] = useState<QuestionAttempt[]>([]);
+  const [questionHistory, setQuestionHistory] = useState<QuestionAttempt[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ const QuestionHistory: React.FC = () => {
 
   useEffect(() => {
     // Fetch question history data
-    const fetchQuestions = async () => {
+    const fetchQuestionHistory = async () => {
       try {
         const response = await axios.get(`http://localhost:5001/history/user/${username}`);
         const data = response.data;
@@ -44,13 +44,13 @@ const QuestionHistory: React.FC = () => {
         }));
 
         // Sort the data by date and time
-        formattedData.sort((a: QuestionAttempt, b: QuestionAttempt) => {
-          const dateA = new Date(`${a.date} ${a.time}`).getTime();
-          const dateB = new Date(`${b.date} ${b.time}`).getTime();
-          return dateB - dateA;
+        formattedData.sort((attempt1: QuestionAttempt, attempt2: QuestionAttempt) => {
+          const attempt1Date = new Date(`${attempt1.date} ${attempt1.time}`).getTime();
+          const attempt2Date = new Date(`${attempt2.date} ${attempt2.time}`).getTime();
+          return attempt2Date - attempt1Date;
         });
 
-        setQuestions(formattedData);
+        setQuestionHistory(formattedData);
       } catch (error) {
         console.error("Failed to fetch question history:", error);
       } finally {
@@ -58,7 +58,7 @@ const QuestionHistory: React.FC = () => {
       }
     };
 
-    fetchQuestions();
+    fetchQuestionHistory();
   }, [username]);
 
   const columns = [
@@ -114,7 +114,7 @@ const QuestionHistory: React.FC = () => {
       {loading ? (
         <Spin tip="Loading..." />
       ) : (
-        <Table columns={columns} dataSource={questions} rowKey="title" scroll={{ y: 300 }} pagination={false} />
+        <Table columns={columns} dataSource={questionHistory} rowKey="title" scroll={{ y: 300 }} pagination={false} />
       )}
     </div>
   );

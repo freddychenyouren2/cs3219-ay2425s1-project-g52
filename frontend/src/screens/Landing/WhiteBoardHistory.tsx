@@ -10,7 +10,8 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const updateDimensions = () => {
+    // Set the dimensions of the whiteboard
+    const updateSize = () => {
       if (containerRef.current) {
         setDimensions({
           width: containerRef.current.clientWidth,
@@ -19,11 +20,11 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
       }
     };
 
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
+    updateSize();
+    window.addEventListener('resize', updateSize);
 
     return () => {
-      window.removeEventListener('resize', updateDimensions);
+      window.removeEventListener('resize', updateSize);
     };
   }, []);
 
