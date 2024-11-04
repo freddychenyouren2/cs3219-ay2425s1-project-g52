@@ -1,11 +1,13 @@
-import { Box, Typography, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { Box, Typography, ToggleButton, ToggleButtonGroup, IconButton } from "@mui/material";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CodeEditorHistory from "./CodeEditorHistory"; 
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import WhiteboardHistory from "./WhiteBoardHistory";
 
 const QuestionAttemptPage: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { question } = location.state;
   const [view, setView] = useState<'attempt' | 'solution'>('attempt');
 
@@ -13,6 +15,10 @@ const QuestionAttemptPage: React.FC = () => {
     if (newView !== null) {
       setView(newView);
     }
+  };
+
+  const handleBackClick = () => {
+    navigate('/landingPage');
   };
 
   return (
@@ -25,8 +31,22 @@ const QuestionAttemptPage: React.FC = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        position: "relative",
       }}
     >
+      <IconButton
+        onClick={handleBackClick}
+        sx={{
+          position: "absolute",
+          top: 16,
+          left: 16,
+          color: "white",
+          fontSize: 32,
+        }}
+      >
+        <ArrowBackIcon fontSize="inherit" />
+      </IconButton>
+
       <Box
         sx={{
           width: "100%",
@@ -36,6 +56,7 @@ const QuestionAttemptPage: React.FC = () => {
           backgroundColor: "#1e1e1e",
           borderRadius: 2,
           textAlign: "center",
+          position: "relative",
         }}
       >
         <Typography
@@ -54,48 +75,57 @@ const QuestionAttemptPage: React.FC = () => {
         </Typography>
       </Box>
 
-      <ToggleButtonGroup
-        value={view}
-        exclusive
-        onChange={handleViewChange}
-        aria-label="view toggle"
-        sx={{ mb: 2 }}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          mb: 2,
+          width: "100%",
+          maxWidth: "900px",
+        }}
       >
-        <ToggleButton
-          value="attempt"
-          aria-label="attempt"
-          sx={{
-            color: "white",
-            backgroundColor: view === 'attempt' ? "#3a3a3a" : "#5a5a5a",
-            '&.Mui-selected': {
-              backgroundColor: "#3a3a3a",
-              color: "white",
-            },
-            '&:hover': {
-              backgroundColor: "#5a5a5a",
-            },
-          }}
+        <ToggleButtonGroup
+          value={view}
+          exclusive
+          onChange={handleViewChange}
+          aria-label="view toggle"
         >
-          Attempt
-        </ToggleButton>
-        <ToggleButton
-          value="solution"
-          aria-label="solution"
-          sx={{
-            color: "white",
-            backgroundColor: view === 'solution' ? "#3a3a3a" : "#5a5a5a",
-            '&.Mui-selected': {
-              backgroundColor: "#3a3a3a",
+          <ToggleButton
+            value="attempt"
+            aria-label="attempt"
+            sx={{
               color: "white",
-            },
-            '&:hover': {
-              backgroundColor: "#5a5a5a",
-            },
-          }}
-        >
-          Solution
-        </ToggleButton>
-      </ToggleButtonGroup>
+              backgroundColor: view === 'attempt' ? "#3a3a3a" : "#5a5a5a",
+              '&.Mui-selected': {
+                backgroundColor: "#3a3a3a",
+                color: "white",
+              },
+              '&:hover': {
+                backgroundColor: "#5a5a5a",
+              },
+            }}
+          >
+            Attempt
+          </ToggleButton>
+          <ToggleButton
+            value="solution"
+            aria-label="solution"
+            sx={{
+              color: "white",
+              backgroundColor: view === 'solution' ? "#3a3a3a" : "#5a5a5a",
+              '&.Mui-selected': {
+                backgroundColor: "#3a3a3a",
+                color: "white",
+              },
+              '&:hover': {
+                backgroundColor: "#5a5a5a",
+              },
+            }}
+          >
+            Solution
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
 
       <Box
         sx={{
