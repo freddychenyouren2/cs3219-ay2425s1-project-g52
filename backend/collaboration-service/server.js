@@ -173,6 +173,7 @@ io.on("connection", (socket) => {
 
       // Join the Socket.IO room
       socket.join(roomId);
+      io.to(roomId).emit("roomUsers", roomParticipants[roomId]);
       console.log(`${username} joined room: ${roomId}`);
 
       if (!roomParticipants[roomId]) {
@@ -246,4 +247,24 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("User disconnected");
   });
+
+  // Handle "endSession" event
+socket.on("endSession", (roomId) => {
+  if (roomParticipants[roomId]) {
+    // Get all connected sockets in the room and disconnect them
+    const roomSockets = io.sockets.adapter.rooms.get(roomId);
+    if (roomSockets) {
+      roomSockets.forEach((socketId) => {
+        const socketToDisconnect = io.sockets.sockets.get(socketId);
+        socketToDisconnect.disconnect(true); // Forcefully disconnect socket
+      });
+    }
+
+    // Clear room participants list
+    delete roomParticipants[roomId];
+
+    console.log(`Session in room ${roomId} has been ended and all users disconnected.`);
+  }
+});
+
 });
