@@ -1,18 +1,12 @@
 import React from "react";
 import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
+import QuestionHistory from "./QuestionHistory";
 import "./LandingPage.css";
 
 const LandingPage: React.FC = () => {
-  // const username = localStorage.getItem("username") || "Guest";
   const username = sessionStorage.getItem("username") || "Guest";
   const navigate = useNavigate();
-
-  const questions = [
-    { title: "Two Sum", difficulty: "Easy" },
-    { title: "Reverse Integer", difficulty: "Medium" },
-    { title: "Regular Expression Matching", difficulty: "Hard" },
-  ];
 
   const usageStreak = 7;
 
@@ -23,12 +17,11 @@ const LandingPage: React.FC = () => {
   const handleLogOut = () => {
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("username");
-    navigate("/") // Instead of window.location.href
-  }
+    navigate("/");
+  };
 
   return (
     <div className="landing-page-container">
-
       <div className="log-out-container">
         <Button
           style={{
@@ -56,18 +49,7 @@ const LandingPage: React.FC = () => {
       <main className="main-content">
         <section className="history-section">
           <h2 className="section-title">Question History</h2>
-          <ul className="question-list">
-            {questions.map((question, index) => (
-              <li className="question-item" key={index}>
-                <span className="question-title">{question.title}</span>
-                <span
-                  className={`difficulty-badge ${question.difficulty.toLowerCase()}`}
-                >
-                  {question.difficulty}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <QuestionHistory />
         </section>
 
         <section className="streak-section">

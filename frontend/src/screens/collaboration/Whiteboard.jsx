@@ -51,6 +51,10 @@ const Whiteboard = ({
     }
   }, [socket]);
 
+  useEffect(() => {
+    setSavedLines(lines);
+  }, [lines, setSavedLines]);
+
   const handleMouseDown = (e) => {
     setIsDrawing(true);
     const pos = e.target.getStage().getPointerPosition();
