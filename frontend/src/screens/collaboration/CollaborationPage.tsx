@@ -2,7 +2,7 @@ import { Box, Typography, Button } from "@mui/material";
 import CodeEditor from "./CodeEditor";
 import { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Whiteboard from "./Whiteboard";
 import ChatBox from "./Chatbox";
 import VideoChat from "./VideoChat";
@@ -11,14 +11,15 @@ const socketURL = process.env.REACT_APP_COLLABORATION_SERVICE_BASE_URL;
 const socket = io(socketURL);
 
 const CollaborationPage = () => {
+  const [usersInRoom, setUsersInRoom] = useState([]);
   const [whiteboardOpen, setWhiteboardOpen] = useState(false);
   const [whiteboardSize, setWhiteboardSize] = useState({ width: 0, height: 0 });
   const whiteboardContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  console.log(location);
   const username = location?.state.username;
   const roomId = location?.state.roomId;
   const question = location?.state.question;
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (socket) {
@@ -38,6 +39,33 @@ const CollaborationPage = () => {
       });
     }
   }, [whiteboardOpen]);
+
+  useEffect(() => {
+    socket.on("roomUsers", (users) => {
+      setUsersInRoom(users);
+    });
+
+    // Clean up listener on unmount
+    return () => {
+      socket.off("roomUsers");
+    };
+  });
+
+  useEffect(() => {
+    // Listen for the socket disconnect event
+    socket.on("disconnect", () => {
+      alert("The session has been ended.");
+      navigate("/landingPage");
+    });
+  
+    return () => {
+      socket.off("disconnect");
+    };
+  });
+
+  const handleEndSession = () => {
+    socket.emit("endSession", roomId);
+  };
 
   return (
     <Box
@@ -107,6 +135,41 @@ const CollaborationPage = () => {
             position: "relative",
           }}
         >
+
+<Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        mb: 2,
+        p: 2,
+        backgroundColor: "#2e2e2e",
+        borderRadius: 2,
+      }}
+    >
+      {/* Display users in the room */}
+      <Box sx={{ display: "flex", flexDirection: "column", color: "white" }}>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          Participants
+        </Typography>
+        {usersInRoom && usersInRoom.map((user: string) => (
+          <Typography key={user} variant="body2" sx={{ color: "gray" }}>
+            {user}
+          </Typography>
+        ))}
+      </Box>
+
+      {/* End session button */}
+      <Button
+        variant="contained"
+        color="error"
+        onClick={handleEndSession}
+        sx={{ ml: 2 }}
+      >
+        End Session
+      </Button>
+    </Box>
+
           <Box
             sx={{
               flex: 1,
