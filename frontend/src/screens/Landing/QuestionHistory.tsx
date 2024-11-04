@@ -43,6 +43,13 @@ const QuestionHistory: React.FC = () => {
           whiteboard_state: item.whiteboard_state,
         }));
 
+        // Sort the data by date and time, newest first
+        formattedData.sort((a: QuestionAttempt, b: QuestionAttempt) => {
+          const dateA = new Date(`${a.date} ${a.time}`).getTime();
+          const dateB = new Date(`${b.date} ${b.time}`).getTime();
+          return dateB - dateA;
+        });
+
         setQuestions(formattedData);
       } catch (error) {
         console.error("Failed to fetch question history:", error);
@@ -59,7 +66,6 @@ const QuestionHistory: React.FC = () => {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      sorter: (a: QuestionAttempt, b: QuestionAttempt) => new Date(`${a.date} ${a.time}`).getTime() - new Date(`${b.date} ${b.time}`).getTime(),
     },
     {
       title: "Time",
@@ -108,7 +114,7 @@ const QuestionHistory: React.FC = () => {
       {loading ? (
         <Spin tip="Loading..." />
       ) : (
-        <Table columns={columns} dataSource={questions} rowKey="title" scroll={{ y: 300 }} />
+        <Table columns={columns} dataSource={questions} rowKey="title" scroll={{ y: 300 }} pagination={false} />
       )}
     </div>
   );
