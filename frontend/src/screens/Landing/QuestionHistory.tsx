@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Tooltip, Spin } from "antd";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./LandingPage.css"; // Ensure this import is present
 
 interface QuestionAttempt {
@@ -12,11 +12,15 @@ interface QuestionAttempt {
   topic: string;
   partner: string;
   description: string;
+  code_contents: string;
+  solution_code: string;
+  whiteboard_state: any;
 }
 
 const QuestionHistory: React.FC = () => {
   const [questions, setQuestions] = useState<QuestionAttempt[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
 
   const username = sessionStorage.getItem("username") || "Guest";
 
@@ -34,14 +38,10 @@ const QuestionHistory: React.FC = () => {
           topic: item.question.qCategory.join(", "),
           partner: item.user_ids.find((user: string) => user !== username), 
           description: item.question.qDescription,
+          code_contents: item.code_contents,
+          solution_code: item.question.qSolution,
+          whiteboard_state: item.whiteboard_state,
         }));
-
-        // Sort the data by date and time, newest first
-        formattedData.sort((a: QuestionAttempt, b: QuestionAttempt) => {
-          const dateA = new Date(`${a.date} ${a.time}`).getTime();
-          const dateB = new Date(`${b.date} ${b.time}`).getTime();
-          return dateB - dateA;
-        });
 
         setQuestions(formattedData);
       } catch (error) {
@@ -59,6 +59,7 @@ const QuestionHistory: React.FC = () => {
       title: "Date",
       dataIndex: "date",
       key: "date",
+      sorter: (a: QuestionAttempt, b: QuestionAttempt) => new Date(`${a.date} ${a.time}`).getTime() - new Date(`${b.date} ${b.time}`).getTime(),
     },
     {
       title: "Time",
@@ -71,7 +72,12 @@ const QuestionHistory: React.FC = () => {
       key: "title",
       render: (text: string, record: QuestionAttempt) => (
         <Tooltip title={record.description}>
-          <Link to={`/questions/${record.title}`}>{text}</Link>
+          <span
+            style={{ color: "blue", cursor: "pointer" }}
+            onClick={() => navigate("/questionAttempt", { state: { question: record } })}
+          >
+            {text}
+          </span>
         </Tooltip>
       ),
     },

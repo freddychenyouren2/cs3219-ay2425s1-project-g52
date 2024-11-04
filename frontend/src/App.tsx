@@ -8,6 +8,7 @@ import TopicsPage from "./screens/TopicSelection/TopicsPage";
 import LoadingPage from "./screens/MatchingQueue/LoadingPage";
 import QuestionManager from "./components/QuestionManager";
 import CollaborationPage from "./screens/collaboration/CollaborationPage";
+import QuestionAttemptPage from "./screens/Landing/QuestionAttemptPage";
 
 const App: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const App: React.FC = () => {
         <Route path="/questionsPage" element={<QuestionManager />} />
         <Route path="/topicsPage" element={<TopicsPage />} />
         <Route path="/loadingPage" element={<LoadingPage />} />
+        <Route path="/questionAttempt" element={<QuestionAttemptPage />} />
         {/* temp entry point to test collaboration */}
         <Route path="/collaboration" element={<CollaborationPage />} /> 
       </Routes>
