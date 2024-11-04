@@ -103,13 +103,12 @@ const QuestionAttemptPage: React.FC = () => {
           flexDirection: "row",
           width: "100%",
           height: "calc(100vh - 200px)",
+          gap: 2,
         }}
       >
         <Box
           sx={{
-            flex: 2,
-            mr: 2,
-            minWidth: "300px",
+            flex: 1,
             height: "100%",
             overflow: "auto",
           }}
@@ -119,7 +118,7 @@ const QuestionAttemptPage: React.FC = () => {
 
         <Box
           sx={{
-            flex: 3,
+            flex: 1,
             backgroundColor: "#2e2e2e",
             display: "flex",
             flexDirection: "column",

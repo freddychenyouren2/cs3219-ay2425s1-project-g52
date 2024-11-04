@@ -20,6 +20,8 @@ const CollaborationPage = () => {
   const roomId = location?.state.roomId;
   const question = location?.state.question;
   const navigate = useNavigate();
+  const [codeContents, setCodeContents] = useState("");
+  const [whiteboardState, setWhiteboardState] = useState([]);
 
   useEffect(() => {
     if (socket) {
@@ -64,7 +66,7 @@ const CollaborationPage = () => {
   });
 
   const handleEndSession = () => {
-    socket.emit("endSession", roomId);
+    socket.emit("endSession", roomId, codeContents, whiteboardState);
   };
 
   return (
@@ -123,7 +125,7 @@ const CollaborationPage = () => {
             overflow: "auto",
           }}
         >
-          <CodeEditor roomId={roomId} />
+          <CodeEditor roomId={roomId} setCodeContents={setCodeContents} />
         </Box>
 
         <Box
@@ -181,13 +183,16 @@ const CollaborationPage = () => {
             }}
             ref={whiteboardContainerRef}
           >
-            <VideoChat
+            <Whiteboard
+              setWhiteBoardOpen={setWhiteboardOpen}
               socket={socket}
-              username={username}
               roomId={roomId}
+              username={username}
               width={whiteboardSize.width}
               height={whiteboardSize.height}
-            ></VideoChat>
+              savedLines={whiteboardState}
+              setSavedLines={setWhiteboardState}
+            />
           </Box>
 
           <Box
