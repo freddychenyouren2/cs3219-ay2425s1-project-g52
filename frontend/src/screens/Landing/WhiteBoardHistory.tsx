@@ -34,13 +34,9 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
           <Rect x={0} y={0} width={dimensions.width} height={dimensions.height} fill="white" />
           {state.map((line: any, i: number) => (
             <Line
-              key={i}
-              points={line.points}
-              stroke={line.erasing ? "white" : line.color}
-              strokeWidth={line.erasing ? 20 : 2}
-              tension={0.5}
-              lineCap="round"
-              globalCompositeOperation="source-over"
+                key={i}
+                points={line.points}
+                stroke={line.color || "black"}
             />
           ))}
         </Layer>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Tooltip, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
-import "./LandingPage.css"; // Ensure this import is present
+import "./LandingPage.css"; 
 
 interface QuestionAttempt {
   date: string;
@@ -25,7 +25,7 @@ const QuestionHistory: React.FC = () => {
   const username = sessionStorage.getItem("username") || "Guest";
 
   useEffect(() => {
-    // Fetch question history data from the API
+    // Fetch question history data
     const fetchQuestions = async () => {
       try {
         const response = await axios.get(`http://localhost:5001/history/user/${username}`);
@@ -43,7 +43,7 @@ const QuestionHistory: React.FC = () => {
           whiteboard_state: item.whiteboard_state,
         }));
 
-        // Sort the data by date and time, newest first
+        // Sort the data by date and time
         formattedData.sort((a: QuestionAttempt, b: QuestionAttempt) => {
           const dateA = new Date(`${a.date} ${a.time}`).getTime();
           const dateB = new Date(`${b.date} ${b.time}`).getTime();
