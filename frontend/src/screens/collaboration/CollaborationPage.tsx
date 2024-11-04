@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Whiteboard from "./Whiteboard";
 import ChatBox from "./Chatbox";
 import VideoChat from "./VideoChat";
+import GeminiAIQuery from "./GeminiAIQuery";
 
 const socketURL = process.env.REACT_APP_COLLABORATION_SERVICE_BASE_URL;
 const socket = io(socketURL);
@@ -104,6 +105,11 @@ const CollaborationPage = () => {
         >
           {question.qDescription}
         </Typography>
+        
+      </Box>
+
+      <Box>
+        <GeminiAIQuery />
       </Box>
 
       <Box
