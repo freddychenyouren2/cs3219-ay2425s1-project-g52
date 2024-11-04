@@ -13,7 +13,7 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
     const updateDimensions = () => {
       if (containerRef.current) {
         setDimensions({
-          width: containerRef.current.clientWidth, // Use clientWidth for better accuracy
+          width: containerRef.current.clientWidth,
           height: containerRef.current.clientHeight,
         });
       }
@@ -30,7 +30,7 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
   return (
     <div
       ref={containerRef}
-      style={{ width: '100%', height: '100%', backgroundColor: 'white', overflow: 'hidden' }} // Ensure overflow hidden
+      style={{ width: '100%', height: '100%', backgroundColor: 'white', overflow: 'hidden' }} 
     >
       <Stage width={dimensions.width} height={dimensions.height}>
         <Layer>
