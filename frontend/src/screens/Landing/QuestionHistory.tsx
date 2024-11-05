@@ -110,11 +110,11 @@ const QuestionHistory: React.FC = () => {
   ];
 
   return (
-    <div style={{ height: "400px", overflowY: "auto" }}>
+    <div style={{ height: "400px", maxWidth:"600px", overflowY: "auto", }}>
       {loading ? (
         <Spin tip="Loading..." />
       ) : (
-        <Table columns={columns} dataSource={questionHistory} rowKey="title" scroll={{ y: 300 }} pagination={false} />
+        <Table columns={columns} dataSource={questionHistory} rowKey="title" scroll={{ y: 300, x: 800 }} pagination={false} />
       )}
     </div>
   );
