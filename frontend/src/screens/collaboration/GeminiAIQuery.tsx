@@ -6,35 +6,49 @@ import ReactMarkdown from 'react-markdown';
 import "./GeminiAIQuery.css"
 
 // const gemini_api_key = process.env.REACT_APP_GEMINI_AI_API_KEY; // Somehow not working 
+interface GeminiAIQueryProps {
+  problemStatement: string;
+  codeContext: string;
+}
 
-function GeminiAIQuery() {
+const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ problemStatement, codeContext }) => {
   const [inputValue, setInputValue] = useState('');
-  const [promptResponses, setpromptResponses] = useState([]);
+  const [promptResponses, setpromptResponses] = useState<{ prompt: string; response: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const genAI = new GoogleGenerativeAI(
     "AIzaSyBpAN8qJHQce7IH4jSr_KUh4Bt568QcYKk" //API Key
   );
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);
   };
   const getResponseForGivenPrompt = async () => {
     try {
       setError(false)
       setLoading(true)
+
+      // Concatenate all previous prompts and responses
+      const conversationContext = promptResponses
+        .map(item => `User: ${item.prompt}\nAI: ${item.response}`)
+        .join("\n") + `\nUser: ${inputValue}`;
+
+      const fullPrompt = `
+        Problem Statement:\n${problemStatement}\n\n
+        Current Code:\n${codeContext}\n\n 
+        Conversation Context:\n${conversationContext}\n\n
+        User's Latest Question: ${inputValue}`;
+
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-      const result = await model.generateContent(inputValue);
-      
+      const result = await model.generateContent(fullPrompt);
       const response = result.response.text();
       // const text = response.text();
       console.log(response)
-      setpromptResponses([...promptResponses,{ inputValue, response }]);
+      setpromptResponses([...promptResponses,{ prompt: inputValue, response }]);
       setInputValue('')
       setLoading(false)
     }
     catch (error) {
-      console.log(error)
-      console.log("GenAI: Something Went Wrong...");
+      console.error("GenAI: Something Went Wrong...", error);
       setLoading(false)
       setError(true)
     }
@@ -56,7 +70,7 @@ function GeminiAIQuery() {
         {promptResponses.map((item, index) => (
           <div key={index} >
             <div className="genai-user-prompt">
-              <strong>Prompt:</strong> <ReactMarkdown>{item.inputValue}</ReactMarkdown>
+              <strong>Prompt:</strong> <ReactMarkdown>{item.prompt}</ReactMarkdown>
             </div>
             
             <div className={`genai-response-text ${index === promptResponses.length - 1 ? 'fw-bold' : ''}`}>
@@ -78,7 +92,6 @@ function GeminiAIQuery() {
     <div className="genai-input-section">
       <div className="textarea-section">
         <textarea
-          type="textarea"
           value={inputValue}
           onChange={handleInputChange}
           placeholder="Need help with code? Ask here!"

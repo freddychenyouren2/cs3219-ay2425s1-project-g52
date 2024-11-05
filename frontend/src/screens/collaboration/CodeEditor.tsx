@@ -25,9 +25,10 @@ const userColor = usercolors[random.uint32() % usercolors.length]
 
 interface CodeEditorProps {
   roomId: string;
+  onContentChange?: (content: string) => void;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ roomId }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, onContentChange }) => {
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [provider, setProvider] = useState<WebrtcProvider | null>(null);
   const [view, setView] = useState<EditorView | null>(null);
@@ -76,6 +77,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId }) => {
     const editorView = new EditorView({
       state,
       parent: document.getElementById("editor")!,
+      dispatch: (tr) => {
+        editorView.update([tr]);
+        // Pass the updated content to the parent component
+        onContentChange && onContentChange(editorView.state.doc.toString())
+      }
     });
     setView(editorView);
 
@@ -83,7 +89,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId }) => {
     return () => {
       editorView.destroy();
     };
-  }, [provider, ydoc]);
+  }, [provider, ydoc, onContentChange]);
 
   return <div id="editor" style={{ height: "90vh", backgroundColor: "#2e2e2e" }} />;
 };

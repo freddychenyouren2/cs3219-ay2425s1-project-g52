@@ -15,6 +15,7 @@ const CollaborationPage = () => {
   const [usersInRoom, setUsersInRoom] = useState([]);
   const [whiteboardOpen, setWhiteboardOpen] = useState(false);
   const [whiteboardSize, setWhiteboardSize] = useState({ width: 0, height: 0 });
+  const [codeContent, setCodeContent] = useState('');
   const whiteboardContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const username = location?.state.username;
@@ -109,7 +110,10 @@ const CollaborationPage = () => {
       </Box>
 
       <Box>
-        <GeminiAIQuery />
+        <GeminiAIQuery 
+          problemStatement={question.qDescription}
+          codeContext={codeContent}
+          />
       </Box>
 
       <Box
@@ -129,7 +133,7 @@ const CollaborationPage = () => {
             overflow: "auto",
           }}
         >
-          <CodeEditor roomId={roomId} />
+          <CodeEditor roomId={roomId} onContentChange={setCodeContent} />
         </Box>
 
         <Box
