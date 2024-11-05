@@ -3,7 +3,6 @@ import CodeEditor from "./CodeEditor";
 import { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import { useLocation, useNavigate } from "react-router-dom";
-import Whiteboard from "./Whiteboard";
 import ChatBox from "./Chatbox";
 import VideoChat from "./VideoChat";
 
@@ -12,7 +11,6 @@ const socket = io(socketURL);
 
 const CollaborationPage = () => {
   const [usersInRoom, setUsersInRoom] = useState([]);
-  const [whiteboardOpen, setWhiteboardOpen] = useState(false);
   const [whiteboardSize, setWhiteboardSize] = useState({ width: 0, height: 0 });
   const whiteboardContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -21,7 +19,6 @@ const CollaborationPage = () => {
   const question = location?.state.question;
   const navigate = useNavigate();
   const [codeContents, setCodeContents] = useState("");
-  const [whiteboardState, setWhiteboardState] = useState([]);
   const [savedLines, setSavedLines] = useState([]); // New state to save lines
 
   useEffect(() => {
@@ -41,7 +38,7 @@ const CollaborationPage = () => {
         height: container.offsetHeight,
       });
     }
-  }, [whiteboardOpen]);
+  }, []);
 
   useEffect(() => {
     socket.on("roomUsers", (users) => {
@@ -112,23 +109,23 @@ const CollaborationPage = () => {
       <Box
         sx={{
           display: "flex",
-          flexDirection: "row",
-          width: "100%",
-          height: "calc(100vh - 200px)",
+          width: "100vw",
+          height: "100vh",
         }}
       >
+  {/* Left side with the CodeEditor */}
         <Box
           sx={{
-            flex: 2,
-            mr: 2,
-            minWidth: "300px",
+            flex: 1,
+            minWidth: "50%",
             height: "100%",
-            overflow: "auto",
+            overflow: "hidden",
           }}
         >
           <CodeEditor roomId={roomId} setCodeContents={setCodeContents} />
         </Box>
 
+    {/* right side */}
         <Box
           sx={{
             flex: 3,

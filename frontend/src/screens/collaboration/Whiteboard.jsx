@@ -139,7 +139,7 @@ const Whiteboard = ({
             <Line
               key={i}
               points={line.points}
-              stroke={line.erasing ? "white" : line.color} // Use the selected color or white for erasing
+              stroke={line.erasing ? "white" : line.color}
               strokeWidth={line.erasing ? 20 : 2}
               tension={0.5}
               lineCap="round"
