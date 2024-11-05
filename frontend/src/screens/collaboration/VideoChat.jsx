@@ -8,7 +8,7 @@ import MicIcon from "@mui/icons-material/Mic";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import Whiteboard from "./Whiteboard";
 
-const VideoChat = ({ socket, username, roomId, width, height }) => {
+const VideoChat = ({ socket, username, roomId, width, height, savedLines, setSavedLines }) => {
   const [peerId, setPeerId] = useState("");
   const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
   const [canStartCall, setCanStartCall] = useState(false);
@@ -20,7 +20,6 @@ const VideoChat = ({ socket, username, roomId, width, height }) => {
   const peerInstance = useRef(null);
   const mediaStreamRef = useRef(null);
   const [showWhiteboard, setShowWhiteboard] = useState(false);
-  const [savedLines, setSavedLines] = useState([]); // New state to save lines
 
   useEffect(() => {
     // Listen for the "roomFull" event from the backend
@@ -149,6 +148,7 @@ const VideoChat = ({ socket, username, roomId, width, height }) => {
   useEffect(() => {
     console.log("savedLines", savedLines);
   }, [savedLines]);
+  
   if (!canStartCall) {
     return (
       <div>
