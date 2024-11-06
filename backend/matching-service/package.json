@@ -2,10 +2,10 @@
     "name": "matching-service",
     "version": "1.0.0",
     "description": "A matching service for user collaboration",
-    "main": "src/index.js",
+    "main": "src/server.js",
     "type": "module",
     "scripts": {
-        "start": "node src/index.js"
+        "start": "node src/server.js"
     },
     "dependencies": {
         "amqplib": "^0.8.0",

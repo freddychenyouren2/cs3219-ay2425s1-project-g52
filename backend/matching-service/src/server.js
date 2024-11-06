@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import {connectRabbitMQ, getChannel} from "./connections.js";
-import {addUser, checkForMatches, requeueUser, removeUserFromAllQueues} from "./matchQueue.js";
+import {addUser, checkForMatches, requeueUser, removeUserFromAllQueues} from "./match-queue.js";
 import {initializeWebSocketServer} from "./websocket.js";
 import {TOPICS, DIFFICULTIES} from './constants/constants.js';
 

@@ -3,7 +3,6 @@ import CodeEditor from "./CodeEditor";
 import { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import { useLocation, useNavigate } from "react-router-dom";
-import Whiteboard from "./Whiteboard";
 import ChatBox from "./Chatbox";
 import VideoChat from "./VideoChat";
 import GeminiAIQuery from "./GeminiAIQuery";
@@ -13,15 +12,15 @@ const socket = io(socketURL);
 
 const CollaborationPage = () => {
   const [usersInRoom, setUsersInRoom] = useState([]);
-  const [whiteboardOpen, setWhiteboardOpen] = useState(false);
   const [whiteboardSize, setWhiteboardSize] = useState({ width: 0, height: 0 });
-  const [codeContent, setCodeContent] = useState('');
   const whiteboardContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const username = location?.state.username;
   const roomId = location?.state.roomId;
   const question = location?.state.question;
   const navigate = useNavigate();
+  const [codeContents, setCodeContents] = useState("");
+  const [savedLines, setSavedLines] = useState([]); // New state to save lines
 
   useEffect(() => {
     if (socket) {
@@ -40,7 +39,7 @@ const CollaborationPage = () => {
         height: container.offsetHeight,
       });
     }
-  }, [whiteboardOpen]);
+  }, []);
 
   useEffect(() => {
     socket.on("roomUsers", (users) => {
@@ -66,7 +65,7 @@ const CollaborationPage = () => {
   });
 
   const handleEndSession = () => {
-    socket.emit("endSession", roomId);
+    socket.emit("endSession", roomId, codeContents, savedLines);
   };
 
   return (
@@ -112,30 +111,31 @@ const CollaborationPage = () => {
       <Box>
         <GeminiAIQuery 
           problemStatement={question.qDescription}
-          codeContext={codeContent}
+          codeContext={codeContents}
           />
       </Box>
 
       <Box
         sx={{
           display: "flex",
-          flexDirection: "row",
-          width: "100%",
-          height: "calc(100vh - 200px)",
+          width: "100vw",
+          height: "100vh",
         }}
       >
+  {/* Left side with the CodeEditor */}
         <Box
           sx={{
-            flex: 2,
-            mr: 2,
-            minWidth: "300px",
+            flex: 1,
+            minWidth: "50%",
             height: "100%",
-            overflow: "auto",
+            overflow: "hidden",
           }}
         >
-          <CodeEditor roomId={roomId} onContentChange={setCodeContent} />
+          <CodeEditor roomId={roomId} setCodeContents={setCodeContents} />
+
         </Box>
 
+    {/* right side */}
         <Box
           sx={{
             flex: 3,
@@ -146,39 +146,39 @@ const CollaborationPage = () => {
           }}
         >
 
-<Box
-      sx={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        mb: 2,
-        p: 2,
-        backgroundColor: "#2e2e2e",
-        borderRadius: 2,
-      }}
-    >
-      {/* Display users in the room */}
-      <Box sx={{ display: "flex", flexDirection: "column", color: "white" }}>
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          Participants
-        </Typography>
-        {usersInRoom && usersInRoom.map((user: string) => (
-          <Typography key={user} variant="body2" sx={{ color: "gray" }}>
-            {user}
-          </Typography>
-        ))}
-      </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+              p: 2,
+              backgroundColor: "#2e2e2e",
+              borderRadius: 2,
+            }}
+          >
+            {/* Display users in the room */}
+            <Box sx={{ display: "flex", flexDirection: "column", color: "white" }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Participants
+              </Typography>
+              {usersInRoom && usersInRoom.map((user: string) => (
+                <Typography key={user} variant="body2" sx={{ color: "gray" }}>
+                  {user}
+                </Typography>
+              ))}
+            </Box>
 
-      {/* End session button */}
-      <Button
-        variant="contained"
-        color="error"
-        onClick={handleEndSession}
-        sx={{ ml: 2 }}
-      >
-        End Session
-      </Button>
-    </Box>
+            {/* End session button */}
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleEndSession}
+              sx={{ ml: 2 }}
+            >
+              End Session
+            </Button>
+          </Box>
 
           <Box
             sx={{
@@ -197,7 +197,9 @@ const CollaborationPage = () => {
               roomId={roomId}
               width={whiteboardSize.width}
               height={whiteboardSize.height}
-            ></VideoChat>
+              savedLines={savedLines}
+              setSavedLines={setSavedLines}
+            />
           </Box>
 
           <Box

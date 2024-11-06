@@ -8,6 +8,7 @@ const WebSocket = require("ws");
 const { setupWSConnection } = require("y-websocket/bin/utils");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const axios = require("axios");
 
 const app = express();
 const server = http.createServer(app);
@@ -53,6 +54,28 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
+// Save initial attempt history
+const saveAttemptHistory = async (attemptData) => {
+  try {
+    await axios.post('http://history-service:5001/history/add', attemptData);
+    return { success: true, message: 'Attempt history saved successfully' };
+  } catch (error) {
+    console.error('Error saving attempt history:', error);
+    return { success: false, message: 'Error saving attempt history' };
+  }
+};
+
+// Update attempt history
+const updateAttemptHistory = async (attemptId, updateData) => {
+  try {
+    await axios.put(`http://history-service:5001/history/update/${attemptId}`, updateData);
+    return { success: true, message: 'Attempt history updated successfully' };
+  } catch (error) {
+    console.error('Error updating attempt history:', error);
+    return { success: false, message: 'Error updating attempt history' };
+  }
+};
+
 // Room Model
 const Room = require("./models/Room");
 
@@ -64,6 +87,18 @@ app.post("/create-room", async (req, res) => {
   console.log("part", participants);
   console.log("api called");
   try {
+
+    const attemptData = {
+      attempt_id: roomId,
+      user_ids: participants,
+      question_id: question._id,
+      first_attempt_date: new Date(),
+      code_contents: '',
+      whiteboard_state: {}
+    };
+    console.log("attemptData", attemptData);
+    await saveAttemptHistory(attemptData);
+
     let existingRoom = await Room.findOne({ roomId });
     if (existingRoom) {
       return res
@@ -76,6 +111,8 @@ app.post("/create-room", async (req, res) => {
     return res
       .status(201)
       .json({ message: "Room created", room: newRoom, status: 201 });
+
+      
   } catch (err) {
     return res.status(500).json({
       message: "Error creating room",
@@ -212,7 +249,7 @@ io.on("connection", (socket) => {
   });
 
   // Handle "endSession" event
-socket.on("endSession", (roomId) => {
+socket.on("endSession", async (roomId, codeContents, whiteboardState) => {
   if (roomParticipants[roomId]) {
     // Get all connected sockets in the room and disconnect them
     const roomSockets = io.sockets.adapter.rooms.get(roomId);
@@ -221,6 +258,19 @@ socket.on("endSession", (roomId) => {
         const socketToDisconnect = io.sockets.sockets.get(socketId);
         socketToDisconnect.disconnect(true); // Forcefully disconnect socket
       });
+    }
+
+    // Update attempt history with code contents and whiteboard state
+    const updateData = {
+      code_contents: codeContents,
+      whiteboard_state: whiteboardState,
+    };
+
+    try {
+      await updateAttemptHistory(roomId, updateData);
+      console.log(`Attempt history for room ${roomId} updated successfully.`);
+    } catch (error) {
+      console.error(`Error updating attempt history for room ${roomId}:`, error);
     }
 
     // Clear room participants list

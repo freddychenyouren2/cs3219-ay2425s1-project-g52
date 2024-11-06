@@ -6,8 +6,18 @@ import { yCollab } from "y-codemirror.next";
 import { WebrtcProvider } from "y-webrtc";
 import { javascript } from "@codemirror/lang-javascript";
 import { oneDark } from "@codemirror/theme-one-dark";
+import axios from "axios";
+import Output from "./Output";
+import { Box, Button, Typography } from "@mui/material";
 
 import * as random from 'lib0/random'
+
+interface OutputDetails {
+  status: { id: number };
+  compile_output: string;
+  stdout: string;
+  stderr: string;
+}
 
 const usercolors = [
   { color: '#6200ea', light: '#6200ea33' },  // Deep Purple
@@ -25,13 +35,20 @@ const userColor = usercolors[random.uint32() % usercolors.length]
 
 interface CodeEditorProps {
   roomId: string;
-  onContentChange?: (content: string) => void;
+  setCodeContents: (code: string) => void;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, onContentChange }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [provider, setProvider] = useState<WebrtcProvider | null>(null);
   const [view, setView] = useState<EditorView | null>(null);
+  const [outputDetails, setOutputDetails] = useState<OutputDetails>({
+    status: { id: 0 },
+    compile_output: "",
+    stdout: "",
+    stderr: "",
+  });
+  const [processing, setProcessing] = useState<boolean>(false);
 
   useEffect(() => {
     // Set up the WebSocket provider
@@ -79,8 +96,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, onContentChange }) => {
       parent: document.getElementById("editor")!,
       dispatch: (tr) => {
         editorView.update([tr]);
-        // Pass the updated content to the parent component
-        onContentChange && onContentChange(editorView.state.doc.toString())
+        if (tr.docChanged) {
+          setCodeContents(editorView.state.doc.toString());
+        }
       }
     });
     setView(editorView);
@@ -89,9 +107,152 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, onContentChange }) => {
     return () => {
       editorView.destroy();
     };
-  }, [provider, ydoc, onContentChange]);
+  }, [provider, ydoc, setCodeContents]);
 
-  return <div id="editor" style={{ height: "90vh", backgroundColor: "#2e2e2e" }} />;
+  const handleCompile = () => {
+    setProcessing(true);
+    if (!view) return;
+    const code = view.state.doc.toString()
+    const formData = {
+      language_id: 63, // for javascript
+      // encode source code in base64
+      source_code: btoa(code),
+      // stdin: btoa(customInput),
+    };
+    const options = {
+      method: "POST",
+      url: process.env.REACT_APP_RAPID_API_URL,
+      params: { base64_encoded: "true", fields: "*" },
+      headers: {
+        "content-type": "application/json",
+        "Content-Type": "application/json",
+        "X-RapidAPI-Host": process.env.REACT_APP_RAPID_API_HOST,
+        "X-RapidAPI-Key": process.env.REACT_APP_RAPID_API_KEY,
+      },
+      data: formData,
+    };
+
+    axios
+      .request(options)
+      .then(function (response) {
+        console.log("res.data", response.data);
+        const token = response.data.token;
+        checkStatus(token);
+      })
+      .catch((err) => {
+        setProcessing(false);
+        let error = err.response ? err.response.data : err;
+        console.log(error);
+      });
+  };
+
+  const checkStatus = async (token: any) => {
+    const options = {
+      method: "GET",
+      url: process.env.REACT_APP_RAPID_API_URL + "/" + token,
+      params: { base64_encoded: "true", fields: "*" },
+      headers: {
+        "X-RapidAPI-Host": process.env.REACT_APP_RAPID_API_HOST,
+        "X-RapidAPI-Key": process.env.REACT_APP_RAPID_API_KEY,
+      },
+    };
+    try {
+      let response = await axios.request(options);
+      let statusId = response.data.status?.id;
+
+      // Processed - we have a result
+      if (statusId === 1 || statusId === 2) {
+        // still processing
+        setTimeout(() => {
+          checkStatus(token)
+        }, 2000)
+        return
+      } else {
+        setProcessing(false)
+        setOutputDetails(response.data)
+        console.log('response.data', response.data)
+        return
+      }
+    } catch (err) {
+      setProcessing(false);
+      console.log("err", err);
+    }
+  };
+
+
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      sx={{
+        width: "100%",
+        height: "100%",
+        padding: 2,
+        boxSizing: "border-box",
+      }}
+    >
+      {/* Container for Editor and Output */}
+      <Box
+        display="flex"
+        flexDirection="column"
+        sx={{
+          flex: 1,
+          gap: 2,
+          overflow: "hidden", // Allow internal areas to scroll without causing parent scroll
+        }}
+      >
+        {/* Editor Area */}
+        <Box
+          id="editor"
+          sx={{
+            flex: 2,
+            backgroundColor: "#2e2e2e",
+            borderRadius: 1,
+            overflowY: "auto", // Scroll within editor if content exceeds space
+            maxheight: "310px",
+          }}
+        />
+
+        {/* Output Area */}
+        <Box
+          sx={{
+            flex: 1,
+            backgroundColor: "#1e1e1e",
+            borderRadius: 1,
+            padding: 2, // Add padding for better spacing
+            maxHeight: "200px",
+            }}
+        >
+          <Output outputDetails={outputDetails} />
+        </Box>
+      </Box>
+
+      {/* Compile Button */}
+      <Box
+        sx={{
+          mt: 2,
+          textAlign: "center",
+        }}
+      >
+       <Button
+        variant="contained"
+        onClick={handleCompile}
+        disabled={!view?.state.doc.toString() || processing}
+        sx={{
+          backgroundColor: processing ? "grey.500" : "#1976d2",
+          color: "white",
+          "&:disabled": {
+            backgroundColor: "grey.500",
+            color: "white",
+          },
+        }}
+      >
+        {processing ? "Processing..." : "Compile and Execute"}
+      </Button>
+
+      </Box>
+    </Box>
+  );
 };
 
 export default CodeEditor;
