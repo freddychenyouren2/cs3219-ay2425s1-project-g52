@@ -125,7 +125,7 @@ const Whiteboard = ({
   }, [socket]);
 
   return (
-    <div style={{ position: "relative", width, height }}>
+    <div style={{ width, height }}>
       <Stage
         width={width}
         height={height}
