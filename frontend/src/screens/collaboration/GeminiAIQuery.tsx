@@ -12,14 +12,15 @@ interface GeminiAIQueryProps {
   codeContext: string;
 }
 
+const apikey = process.env.REACT_APP_GEMINI_API_KEY || "";
+console.log(apikey);
+
 const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) => {
   const [inputValue, setInputValue] = useState('');
   const [promptResponses, setPromptResponses] = useState<{ prompt: string; response: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const genAI = new GoogleGenerativeAI(
-    "AIzaSyBpAN8qJHQce7IH4jSr_KUh4Bt568QcYKk" //API Key
-  );
+  const genAI = new GoogleGenerativeAI(apikey);
 
   const problemStatement = question.qDescription;
   const questionTopic = question.qCategory;
