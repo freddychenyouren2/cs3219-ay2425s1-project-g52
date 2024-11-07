@@ -111,15 +111,6 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
 
   return (
     <div className="genai-container">
-    
-    {loading ? (
-      <div className="text-center mt-3">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden genai-loading-text">GenAI Loading...</span>
-       {/* // This message is shown while your answer to your prompt is being generated */}
-        </div>
-      </div>
-    ) : (
       <div className='genai-response-container'>
         {promptResponses.map((item, index) => (
           <div key={index} >
@@ -134,7 +125,15 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
           </div>
         ))}
       </div>
-    )}
+
+      {loading &&
+        <div className="genai-loading-text">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">GenAI Loading...</span>
+        {/* // This message is shown while your answer to your prompt is being generated */}
+          </div>
+        </div>
+      }
 
     {error && 
       <div className="genai-error-alert">
