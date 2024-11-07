@@ -26,9 +26,9 @@ async function notifyMatch(userId1, userId2, topic, difficulty) {
       participants: [userId1, userId2],
       question: question,
     });
-    console.log("Response from testPostRequest:", response);
+    
     if (response.status == 201) {
-      const roomId = response.room?.roomId;
+      // const roomId = response.room?.roomId;
       const roomData = response.room;
       notifyUser(userId1, "matched", roomData);
       notifyUser(userId2, "matched", roomData);

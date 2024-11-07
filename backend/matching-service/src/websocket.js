@@ -19,7 +19,7 @@ export async function initializeWebSocketServer(port) {
 
 export function notifyUser(userId, status, roomData = undefined) {
   const ws = ws_clients.get(userId);
-  if (ws && ws.readyState === WebSocket.OPEN) {
+  if (ws?.readyState === WebSocket.OPEN) {
     const messageObject = {
       userId: userId,
       status: status,

@@ -15,6 +15,8 @@ const server = http.createServer(app);
 const connectionURL = process.env.ATLAS_URI || "";
 const frontendURL = process.env.frontendURL || "http://localhost:3000";
 
+const roomParticipants = {};
+
 // Connect to MongoDB
 mongoose
   .connect(connectionURL)
@@ -81,13 +83,9 @@ const Room = require("./models/Room");
 
 // Create a new room with participants
 app.post("/create-room", async (req, res) => {
-  console.log("req:", req.body);
   const { roomId, participants, question } = req.body;
-  console.log("roomId", roomId);
-  console.log("part", participants);
-  console.log("api called");
-  try {
 
+  try {
     const attemptData = {
       attempt_id: roomId,
       user_ids: participants,
@@ -140,7 +138,49 @@ app.get("/room-exists/:roomId", async (req, res) => {
   }
 });
 
-const roomParticipants = {};
+// Check if user has an active session
+app.get("/active-user/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  // Iterate over all rooms in roomParticipants
+  for (const [_, participants] of Object.entries(roomParticipants)) {
+    if (participants.includes(userId)) {
+      return res.status(200).json(true);  // Respond with true if active
+    }
+  }
+  return res.status(200).json(false);  // Respond with false if not active
+});
+
+// Get active session based on username
+app.get("/session/:username", async (req, res) => {
+  const { username } = req.params;
+
+  try {
+    // Iterate over all rooms in roomParticipants
+    for (const [roomId, participants] of Object.entries(roomParticipants)) {
+      if (participants.includes(username)) {
+        // Fetch room details, such as the question, from the database or session storage
+        const sessionData = await Room.findOne({ roomId });
+
+        if (sessionData) {
+          return res.status(200).json(sessionData);
+        }
+      }
+    }
+
+    // No active session found for the specified username
+    return res.status(404).json({
+      message: "No active session found for the specified user."
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error retrieving room information",
+      error: error.message,
+    });
+  }
+});
+
 
 // Handle Socket.IO connections
 io.on("connection", (socket) => {

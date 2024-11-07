@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Stage, Layer, Line, Rect } from "react-konva";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import CreateIcon from "@mui/icons-material/Create";

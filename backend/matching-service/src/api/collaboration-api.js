@@ -4,8 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 // Function to create a room
 const createRoom = async ({ participants, question }) => {
   console.log("question:", question);
-  const url = process.env.COLLABORATION_SERVICE_URL;
-  console.log("url:", url);
+  const url = process.env.COLLABORATION_SERVICE_URL + "/create-room";
   const requestBody = {
     roomId: uuidv4(),
     participants: participants,

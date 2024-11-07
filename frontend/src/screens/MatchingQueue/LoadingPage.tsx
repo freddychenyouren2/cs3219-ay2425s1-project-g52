@@ -140,7 +140,7 @@ const LoadingPage: React.FC = () => {
   };
 
   const handleContinue = () => {
-    navigate("/questionsPage", { state: { userId } });
+    // navigate("/questionsPage", { state: { userId } });
     navigate("/collaboration", {
       state: { roomId: roomId, username: userId, question: question },
     });
