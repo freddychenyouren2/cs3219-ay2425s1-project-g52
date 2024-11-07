@@ -4,11 +4,11 @@ import { EditorState } from "@codemirror/state";
 import * as Y from "yjs";
 import { yCollab } from "y-codemirror.next";
 import { WebrtcProvider } from "y-webrtc";
-import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 import axios from "axios";
 import Output from "./Output";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button } from "@mui/material";
 
 import * as random from 'lib0/random'
 
@@ -85,7 +85,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
       extensions: [
         basicSetup,
         oneDark,
-        javascript(), // Syntax highlighting for JavaScript
+        python(), // Syntax highlighting for JavaScript
         yCollab(yText, provider.awareness, {undoManager}),
       ],
     });
@@ -114,7 +114,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
     if (!view) return;
     const code = view.state.doc.toString()
     const formData = {
-      language_id: 63, // for javascript
+      language_id: 100, // for python
       // encode source code in base64
       source_code: btoa(code),
       // stdin: btoa(customInput),
