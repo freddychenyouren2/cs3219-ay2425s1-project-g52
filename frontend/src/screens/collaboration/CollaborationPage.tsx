@@ -5,6 +5,7 @@ import io from "socket.io-client";
 import { useLocation, useNavigate } from "react-router-dom";
 import ChatBox from "./Chatbox";
 import VideoChat from "./VideoChat";
+import GeminiAIQuery from "./GeminiAIQuery";
 
 const socketURL = process.env.REACT_APP_COLLABORATION_SERVICE_BASE_URL;
 const socket = io(socketURL);
@@ -104,6 +105,14 @@ const CollaborationPage = () => {
         >
           {question.qDescription}
         </Typography>
+        
+      </Box>
+
+      <Box>
+        <GeminiAIQuery 
+          question={question}
+          codeContext={codeContents}
+          />
       </Box>
 
       <Box
@@ -123,6 +132,7 @@ const CollaborationPage = () => {
           }}
         >
           <CodeEditor roomId={roomId} setCodeContents={setCodeContents} />
+
         </Box>
 
     {/* right side */}
