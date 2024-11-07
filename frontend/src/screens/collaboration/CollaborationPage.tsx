@@ -110,7 +110,7 @@ const CollaborationPage = () => {
 
       <Box>
         <GeminiAIQuery 
-          problemStatement={question.qDescription}
+          question={question}
           codeContext={codeContents}
           />
       </Box>
