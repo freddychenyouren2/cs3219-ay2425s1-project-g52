@@ -83,7 +83,10 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
         Problem Statement:\n${problemStatement}\n\n
         Current Code:\n${codeContext}\n\n 
         Conversation Context:\n${conversationContext}\n\n
-        User's Latest Question: ${inputValue}`;
+        User's Latest Question: ${inputValue}
+        
+        If you are sending code solution, please send in PYTHON unless specified otherwise. 
+        Please explain your solutions for the user too.`;
 
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
       const result = await model.generateContent(fullPrompt);
