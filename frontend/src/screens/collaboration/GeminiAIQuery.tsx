@@ -33,7 +33,7 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
 
   const checkPromptRelevance = async (conversationContext: string, currentPrompt: string) => {
     const relevanceCheckPrompt = 
-    `Determine if the following user question is relevant to programming, software development, or technologies related to JavaScript, HTML, CSS, or the current project context and the conversation context so far.\n\n
+    `Determine if the following user question is relevant to programming, software development, data structure, algorithms or technologies related to frontend, backend, DevOps or the current project context and the conversation context so far.\n\n
     The question topic is ${questionTopic}, with the title ${questionTItle}.\n\n
     Problem statement: ${problemStatement}\n\n
     Past Conversation context: ${conversationContext}\n\n
