@@ -68,7 +68,7 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
           setPromptResponses(
             [...promptResponses, 
               { prompt: inputValue, 
-                response: `Hmm... Your question appears irrelevant to our programming assignment and context at hand... 
+                response: `Hmm... Your message appears irrelevant to our programming assignment and context at hand... 
                   Let's focus on the task. 
                   I shall pretend this never happened :)` 
               }
@@ -80,13 +80,17 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
         }
 
       const fullPrompt = `
+        You are assiting users in their learning of programming implementations. 
         Problem Statement:\n${problemStatement}\n\n
         Current Code:\n${codeContext}\n\n 
         Conversation Context:\n${conversationContext}\n\n
-        User's Latest Question: ${inputValue}
         
-        If you are sending code solution, please send in PYTHON unless specified otherwise. 
-        Please explain your solutions for the user too.`;
+        If you are sending code solution, please send in PYTHON unless specified otherwise, and explain your code solution. \n\n
+        Respond as natural as possible. \n\n
+
+        You can respond small talks with small talks, but remind the users to focus on the task at hand.\n\n
+        
+        User's Latest Question: ${inputValue}`;
 
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
       const result = await model.generateContent(fullPrompt);
