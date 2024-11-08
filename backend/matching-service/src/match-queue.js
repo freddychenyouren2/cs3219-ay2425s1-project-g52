@@ -1,11 +1,7 @@
 import { getChannel } from "./connections.js";
 import { notifyUser } from "./websocket.js";
 import { DIFFICULTIES } from "./constants/constants.js";
-import {
-  createRoom,
-  testPostRequest,
-  checkRoomExists,
-} from "./api/collaboration-api.js";
+import { createRoom } from "./api/collaboration-api.js";
 import { getQuestion } from "./api/question-service-api.js";
 
 const activeUsers = new Set();
@@ -15,6 +11,7 @@ const capitalizeFirstLetter = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 };
 
+// To notify the users about the match
 async function notifyMatch(userId1, userId2, topic, difficulty) {
   try {
     const question = await getQuestion(
@@ -47,12 +44,14 @@ function removeTimeout(user) {
   }
 }
 
+// To handle timeout for a user
 function handleTimeout(user, channel) {
   const userId = user.userId;
   if (timeoutTabs.has(userId)) {
     clearTimeout(timeoutTabs.get(userId));
   }
 
+  // Timeout for 30 seconds
   const timeoutId = setTimeout(async () => {
     await removeUserFromQueue(user, channel);
     notifyUser(userId, "timeout");
@@ -64,6 +63,7 @@ function handleTimeout(user, channel) {
   timeoutTabs.set(userId, timeoutId);
 }
 
+// To add a user to match queue
 export async function addUser(user) {
   const userId = user.userId;
   if (activeUsers.has(userId)) {
@@ -87,6 +87,7 @@ export async function addUser(user) {
   }
 }
 
+// To get users from the specified queue name
 async function fetchMatchQueue(queueName, channel) {
   const users = [];
   await new Promise((resolve) => {
@@ -124,6 +125,7 @@ function selectLowerDifficulty(difficulty1, difficulty2) {
   return index1 < index2 ? difficulty1 : difficulty2;
 }
 
+// To check for matches
 export async function checkForMatches(matchRequest, channel) {
   const topic = matchRequest.topic;
   const difficulty = matchRequest.difficulty;
@@ -193,12 +195,14 @@ export async function checkForMatches(matchRequest, channel) {
   return false;
 }
 
+// To add the user to the queue with the specified topic and difficulty
 export async function requeueUser(user, channel) {
   const queueName = `${user.topic}_${user.difficulty}_queue`;
   await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(user)));
   console.log(`User ${user.userId} requeued to ${queueName}`);
 }
 
+// To remove the user from the queue with the specified name
 async function removeUserFromQueueByName(userId, queueName, channel) {
   const users = await fetchMatchQueue(queueName, channel);
   for (const user of users) {
@@ -210,6 +214,7 @@ async function removeUserFromQueueByName(userId, queueName, channel) {
   activeUsers.delete(userId);
 }
 
+// To remove the user from the queue
 async function removeUserFromQueue(user, channel) {
   const queueName = `${user.topic}_${user.difficulty}_queue`;
   await removeUserFromQueueByName(user.userId, queueName, channel);

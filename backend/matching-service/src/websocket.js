@@ -2,6 +2,7 @@ import WebSocket from "ws";
 
 const ws_clients = new Map();
 
+// Initialize the WebSocket server
 export async function initializeWebSocketServer(port) {
   const wss = new WebSocket.Server({ port });
 
@@ -17,6 +18,7 @@ export async function initializeWebSocketServer(port) {
   console.log(`WebSocket server is running on port ${port}`);
 }
 
+// To notify the user about the status of the request
 export function notifyUser(userId, status, roomData = undefined) {
   const ws = ws_clients.get(userId);
   if (ws?.readyState === WebSocket.OPEN) {

@@ -29,6 +29,7 @@ async function initialize() {
   }
 }
 
+// Initialize the match queues
 async function initializeMatchQueue(channel) {
   for (const topic of TOPICS) {
     const topicQueueName = `${topic}_queue`;
@@ -44,6 +45,7 @@ async function initializeMatchQueue(channel) {
   console.log("Match queues initialized");
 }
 
+// To process match requests
 async function processMatchRequests(channel) {
   channel.prefetch(1);
   for(const topic of TOPICS) {
@@ -67,6 +69,7 @@ async function processMatchRequests(channel) {
 
 initialize();
 
+// api to add a user to the match queue
 app.post("/match", async (req, res) => {
   console.log("Received user data:", req.body);
   const user = req.body;
@@ -80,6 +83,7 @@ app.post("/match", async (req, res) => {
   }
 });
 
+// api to remove a user from all queues
 app.delete("/match/:userId", async (req, res) => {
   const userId = req.params.userId;
   const {topic, difficulty} = req.body;
