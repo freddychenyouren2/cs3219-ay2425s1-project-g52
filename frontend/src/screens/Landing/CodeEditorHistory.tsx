@@ -15,7 +15,12 @@ const CodeEditorHistory: React.FC<CodeEditorHistoryProps> = ({ code }) => {
     if (editorRef.current) {
       const view = new EditorView({
         doc: code,
-        extensions: [basicSetup, javascript(), oneDark, EditorView.editable.of(false)],
+        extensions: [
+          basicSetup, 
+          javascript(), 
+          oneDark, 
+          EditorView.editable.of(false), // Disable code editing
+        ],
         parent: editorRef.current,
       });
 

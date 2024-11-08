@@ -30,27 +30,7 @@ const QuestionHistory: React.FC = () => {
       try {
         const response = await axios.get(`http://localhost:5001/history/user/${username}`);
         const data = response.data;
-        const formattedData = data.map((item: any) => ({
-          date: new Date(item.first_attempt_date).toLocaleDateString(),
-          time: new Date(item.first_attempt_date).toLocaleTimeString(),
-          title: item.question.qTitle,
-          difficulty: item.question.qComplexity,
-          topic: item.question.qCategory.join(", "),
-          partner: item.user_ids.find((user: string) => user !== username), 
-          description: item.question.qDescription,
-          code_contents: item.code_contents,
-          solution_code: item.question.qSolution,
-          whiteboard_state: item.whiteboard_state,
-        }));
-
-        // Sort the data by date and time
-        formattedData.sort((attempt1: QuestionAttempt, attempt2: QuestionAttempt) => {
-          const attempt1Date = new Date(`${attempt1.date} ${attempt1.time}`).getTime();
-          const attempt2Date = new Date(`${attempt2.date} ${attempt2.time}`).getTime();
-          return attempt2Date - attempt1Date;
-        });
-
-        setQuestionHistory(formattedData);
+        setQuestionHistory(data);
       } catch (error) {
         console.error("Failed to fetch question history:", error);
       } finally {
@@ -61,6 +41,7 @@ const QuestionHistory: React.FC = () => {
     fetchQuestionHistory();
   }, [username]);
 
+  // Columns for the table
   const columns = [
     {
       title: "Date",
@@ -112,9 +93,16 @@ const QuestionHistory: React.FC = () => {
   return (
     <div style={{ height: "400px", maxWidth:"600px", overflowY: "auto", }}>
       {loading ? (
+        // Loading spinner
         <Spin tip="Loading..." />
       ) : (
-        <Table columns={columns} dataSource={questionHistory} rowKey="title" scroll={{ y: 300, x: 800 }} pagination={false} />
+        <Table 
+        columns={columns} 
+        dataSource={questionHistory} 
+        rowKey="attempt_id"
+        scroll={{ y: 300, x: 800 }} 
+        pagination={false} 
+        />
       )}
     </div>
   );
