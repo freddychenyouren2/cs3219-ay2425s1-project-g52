@@ -41,6 +41,7 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
               key={i}
               points={line.points}
               stroke={line.color || "black"}
+              strokeWidth={line.width || 2}
             />
           ))}
         </Layer>

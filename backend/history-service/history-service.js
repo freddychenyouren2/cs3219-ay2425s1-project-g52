@@ -14,16 +14,28 @@ async function getAttemptHistoryByUserId(userId) {
     try {
       const question_id= attempt.question_id;
       const questionResponse = await axios.get(`http://question-service:8000/api/v1/questions/${question_id}`);
-      populatedHistories.push({
-        ...attempt.toObject(),
+      const populatedAttempt = {
+        attempt_id: attempt.attempt_id,
+        user_ids: attempt.user_ids,
+        question_id: attempt.question_id,
+        first_attempt_date: attempt.first_attempt_date,
+        code_contents: attempt.code_contents,
+        whiteboard_state: attempt.whiteboard_state,
         question: questionResponse.data,
-      });
+      };
+      populatedHistories.push(populatedAttempt);
     } catch (error) {
       console.error(`Failed to fetch question details for question_id ${attempt.question_id}:`, error);
-      populatedHistories.push({
-        ...attempt.toObject(),
+      const populatedAttempt = {
+        attempt_id: attempt.attempt_id,
+        user_ids: attempt.user_ids,
+        question_id: attempt.question_id,
+        first_attempt_date: attempt.first_attempt_date,
+        code_contents: attempt.code_contents,
+        whiteboard_state: attempt.whiteboard_state,
         question: null,
-      });
+      };
+      populatedHistories.push(populatedAttempt);
     }
   }
   return populatedHistories;
