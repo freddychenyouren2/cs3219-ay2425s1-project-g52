@@ -12,14 +12,15 @@ interface GeminiAIQueryProps {
   codeContext: string;
 }
 
+const apikey = process.env.REACT_APP_GEMINI_API_KEY || "";
+console.log(apikey);
+
 const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) => {
   const [inputValue, setInputValue] = useState('');
   const [promptResponses, setPromptResponses] = useState<{ prompt: string; response: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const genAI = new GoogleGenerativeAI(
-    "AIzaSyBpAN8qJHQce7IH4jSr_KUh4Bt568QcYKk" //API Key
-  );
+  const genAI = new GoogleGenerativeAI(apikey);
 
   const problemStatement = question.qDescription;
   const questionTopic = question.qCategory;
@@ -32,7 +33,7 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
 
   const checkPromptRelevance = async (conversationContext: string, currentPrompt: string) => {
     const relevanceCheckPrompt = 
-    `Determine if the following user question is relevant to programming, software development, or technologies related to JavaScript, HTML, CSS, or the current project context and the conversation context so far.\n\n
+    `Determine if the following user question is relevant to programming, software development, data structure, algorithms or technologies related to frontend, backend, DevOps or the current project context and the conversation context so far.\n\n
     The question topic is ${questionTopic}, with the title ${questionTItle}.\n\n
     Problem statement: ${problemStatement}\n\n
     Past Conversation context: ${conversationContext}\n\n
@@ -67,7 +68,7 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
           setPromptResponses(
             [...promptResponses, 
               { prompt: inputValue, 
-                response: `Hmm... Your question appears irrelevant to our programming assignment and context at hand... 
+                response: `Hmm... Your message appears irrelevant to our programming assignment and context at hand... 
                   Let's focus on the task. 
                   I shall pretend this never happened :)` 
               }
@@ -79,9 +80,16 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
         }
 
       const fullPrompt = `
+        You are assiting users in their learning of programming implementations. 
         Problem Statement:\n${problemStatement}\n\n
         Current Code:\n${codeContext}\n\n 
         Conversation Context:\n${conversationContext}\n\n
+        
+        If you are sending code solution, please send in PYTHON unless specified otherwise, and explain your code solution. \n\n
+        Respond as natural as possible. \n\n
+
+        You can respond small talks with small talks, but remind the users to focus on the task at hand.\n\n
+        
         User's Latest Question: ${inputValue}`;
 
       const model = genAI.getGenerativeModel({ model: "gemini-pro" });
@@ -103,15 +111,6 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
 
   return (
     <div className="genai-container">
-    
-    {loading ? (
-      <div className="text-center mt-3">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden genai-loading-text">GenAI Loading...</span>
-       {/* // This message is shown while your answer to your prompt is being generated */}
-        </div>
-      </div>
-    ) : (
       <div className='genai-response-container'>
         {promptResponses.map((item, index) => (
           <div key={index} >
@@ -126,7 +125,15 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
           </div>
         ))}
       </div>
-    )}
+
+      {loading &&
+        <div className="genai-loading-text">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">GenAI Loading...</span>
+        {/* // This message is shown while your answer to your prompt is being generated */}
+          </div>
+        </div>
+      }
 
     {error && 
       <div className="genai-error-alert">
