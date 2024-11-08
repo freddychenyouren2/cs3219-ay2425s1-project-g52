@@ -75,7 +75,7 @@ export async function addUser(user) {
   try {
     const queueName = `${user.topic}_queue`;
     const channel = getChannel();
-    await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(user)));
+    await channel.sendToQueue(queueName, Buffer.from(JSON.stringify(user))); 
     console.log(`User ${userId} added to the ${queueName}`);
 
     handleTimeout(user, channel);
@@ -90,6 +90,7 @@ export async function addUser(user) {
 // To get users from the specified queue name
 async function fetchMatchQueue(queueName, channel) {
   const users = [];
+  // Use a promise to wait for the consumer to finish
   await new Promise((resolve) => {
     channel
       .consume(
@@ -220,6 +221,7 @@ async function removeUserFromQueue(user, channel) {
   await removeUserFromQueueByName(user.userId, queueName, channel);
 }
 
+// To remove the user from queues with the specified topic and difficulty and same topic
 export async function removeUserFromAllQueues(
   userId,
   topic,
