@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Box, TextField, Button, Select, MenuItem, InputLabel } from '@mui/material';
-import { Question } from '../api/interfaces';
+import { Question } from '../../api/interfaces';
 
 interface QuestionModalProps {
   open: boolean;
