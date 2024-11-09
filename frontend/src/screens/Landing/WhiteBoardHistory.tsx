@@ -10,7 +10,7 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    // Set the dimensions of the whiteboard
+    // Update the dimensions of the whiteboard
     const updateSize = () => {
       if (containerRef.current) {
         setDimensions({
@@ -41,6 +41,7 @@ const WhiteboardHistory: React.FC<WhiteboardHistoryProps> = ({ state }) => {
               key={i}
               points={line.points}
               stroke={line.color || "black"}
+              strokeWidth={line.width || 2}
             />
           ))}
         </Layer>

@@ -10,6 +10,7 @@ const app = express();
 
 const connectionURL = process.env.ATLAS_URI || "";
 
+// Connec to MongoDB database
 mongoose
   .connect(connectionURL)
   .then(() => console.log("Database connected.."))
@@ -21,6 +22,7 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
+// api route to add a new attempt
 app.post('/history/add', async (req, res) => {
   try {
     await addAttemptHistory(req.body);
@@ -30,6 +32,7 @@ app.post('/history/add', async (req, res) => {
   }
 });
 
+// api to get all attempts by a user
 app.get('/history/user/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -40,6 +43,7 @@ app.get('/history/user/:userId', async (req, res) => {
   }
 });
 
+// api to update an attempt with the attemptId
 app.put('/history/update/:attemptId', async (req, res) => {
   try {
     const attemptId = req.params.attemptId;

@@ -11,6 +11,7 @@ const QuestionAttemptPage: React.FC = () => {
   const { question } = location.state;
   const [codeContent, setCodeContent] = useState<'attempt' | 'solution'>('attempt');
 
+  // Handle the change of code between attempted and suggested solution
   const handleCodeContentChange = (event: React.MouseEvent<HTMLElement>, newCodeContent: 'attempt' | 'solution') => {
     if (newCodeContent !== null) {
       setCodeContent(newCodeContent);
@@ -34,6 +35,7 @@ const QuestionAttemptPage: React.FC = () => {
         position: "relative",
       }}
     >
+      {/* Back button on top */}
       <IconButton
         onClick={handleBackClick}
         sx={{
@@ -75,6 +77,7 @@ const QuestionAttemptPage: React.FC = () => {
         </Typography>
       </Box>
 
+      {/* Toggle button to change between the attempted and suggested solution */}
       <Box
         sx={{
           display: "flex",
@@ -133,6 +136,7 @@ const QuestionAttemptPage: React.FC = () => {
           gap: 2,
         }}
       >
+        {/* Code editor with attmepted code */}
         <Box
           sx={{
             flex: 1,
@@ -144,6 +148,7 @@ const QuestionAttemptPage: React.FC = () => {
           <CodeEditorHistory code={codeContent === 'attempt' ? question.code_contents : question.solution_code} />
         </Box>
 
+        {/* Whiteboard */}
         <Box
           sx={{
             flex: 1,

@@ -20,6 +20,8 @@ const Whiteboard = ({
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
   const [currentColor, setCurrentColor] = useState("black"); // Default color is black
+  const [strokeWidth, setStrokeWidth] = useState(2); // Default stroke width
+  const eraserWidth = 20; // Stroke width for erasing
   const [anchorEl, setAnchorEl] = useState(null); // Anchor for color selection menu
 
   const throttleTimeout = useRef(null);
@@ -60,7 +62,7 @@ const Whiteboard = ({
     const pos = e.target.getStage().getPointerPosition();
     setLines([
       ...lines,
-      { points: [pos.x, pos.y], color: currentColor, erasing: isErasing },
+      { points: [pos.x, pos.y], color: currentColor, erasing: isErasing, width: strokeWidth },
     ]);
   };
 
@@ -87,7 +89,15 @@ const Whiteboard = ({
   };
 
   const toggleEraseMode = () => {
-    setIsErasing(!isErasing);
+    if (isErasing) {
+      setIsErasing(false);
+      setCurrentColor("black"); // Reset to default drawing color
+      setStrokeWidth(2); // Reset to default drawing stroke width
+    } else {
+      setIsErasing(true);
+      setCurrentColor("white"); // Set color to white when erasing
+      setStrokeWidth(eraserWidth); // Set stroke width to eraserWidth when erasing
+    }
   };
 
   // Open the color picker menu
@@ -104,7 +114,7 @@ const Whiteboard = ({
   const changeColor = (color) => {
     setCurrentColor(color);
     setIsErasing(false); // Turn off erasing when changing color
-    handleClose(); // Close the menu after selecting a color
+    setStrokeWidth(2); // Reset to default drawing stroke width
   };
 
   const closeWhiteboard = () => {
