@@ -8,8 +8,9 @@ import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 import Output from "./Output";
 import { Box, Button } from "@mui/material";
-// import LanguageDropdown from "./LanguageDropdown";
+import LanguageDropdown from "./LanguageDropdown";
 import { compileCode, checkStatus } from "../../api/judge-api";
+import { languageMap } from "./languageMap"; // Import the language map
 
 import * as random from 'lib0/random'
 
@@ -50,11 +51,22 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
     stderr: "",
   });
   const [processing, setProcessing] = useState<boolean>(false);
-  // const [language, setLanguage] = useState(100);
 
-  // const onSelectChange = (languageId : number) => {
-  //   setLanguage(languageId);
-  // };
+  // for language stuff
+  const [languageId, setLanguage] = useState<number>(100);
+  const [editorMode, setEditorMode] = useState<any>(null);
+
+  useEffect(() => {
+    const language = languageMap[languageId];
+    if (language) {
+      setEditorMode(language.mode); // Update the mode based on the selected language
+    }
+  }, [languageId]); // Re-run effect whenever languageId changes
+
+
+  const handleLanguageChange = (language : number) => {
+    setLanguage(language);
+  };
 
   useEffect(() => {
     // Set up the WebSocket provider
@@ -91,7 +103,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
       extensions: [
         basicSetup,
         oneDark,
-        python(), // Syntax highlighting for python
+        editorMode, // langunge highlighter
+        // python(), // Syntax highlighting for python
         yCollab(yText, provider.awareness, {undoManager}),
       ],
     });
@@ -113,7 +126,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
     return () => {
       editorView.destroy();
     };
-  }, [provider, ydoc, setCodeContents]);
+  }, [provider, ydoc, setCodeContents, editorMode]);
 
   const handleCompile = async () => {
     setProcessing(true);
@@ -123,7 +136,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
     
     try {
       const token = await compileCode({
-        languageId: 100, // Python's ID
+        languageId: languageId || 100, // use correct lang
         sourceCode: code,
       });
       pollStatus(token);
@@ -173,7 +186,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
           overflow: "hidden", // Allow internal areas to scroll without causing parent scroll
         }}
       >
-        {/* <LanguageDropdown onSelectChange={setLanguage}/> */}
+        <LanguageDropdown selectedLanguage={languageId} onSelectChange={handleLanguageChange} />
         {/* Editor Area */}
         <Box
           id="editor"

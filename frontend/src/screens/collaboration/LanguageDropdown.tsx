@@ -1,47 +1,23 @@
-import React, { useEffect, useState } from "react";
-import Select, { SingleValue } from "react-select";
-// import { customStyles } from "../constants/customStyles";
-
-interface LanguageOption {
-  id: number;
-  name: string;
-}
+import Select from "react-select";
+import { languageMap } from "./languageMap"; // Import the language map
 
 interface LanguageDropdownProps {
-  onSelectChange: (selectedOption: SingleValue<{ value: number; label: string }>) => void;
+  selectedLanguage: number; // The currently selected language ID
+  onSelectChange: (selectedLanguage: number) => void;
 }
 
-const LanguageDropdown: React.FC<LanguageDropdownProps> = ({ onSelectChange }) => {
-  const [languageOptions, setLanguageOptions] = useState<{ value: number; label: string }[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchLanguages = async () => {
-      try {
-        const response = await fetch("https://ce.judge0.com/languages/");
-        const languages: LanguageOption[] = await response.json();
-        const options = languages.map(lang => ({
-          value: lang.id,
-          label: lang.name,
-        }));
-        setLanguageOptions(options);
-      } catch (error) {
-        console.error("Error fetching languages:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLanguages();
-  }, []);
+const LanguageDropdown: React.FC<LanguageDropdownProps> = ({ selectedLanguage, onSelectChange }) => {
+  const languageOptions = Object.entries(languageMap).map(([id, lang]) => ({
+    value: Number(id),
+    label: lang.name,
+  }));
 
   return (
     <Select
-      placeholder="Filter By Category"
+      value={languageOptions.find(option => option.value === selectedLanguage)} // Set the currently selected language
       options={languageOptions}
-    //   styles={customStyles}
-      isLoading={loading}
-      onChange={(selectedOption) => onSelectChange(selectedOption)}
+      onChange={(selectedOption) => onSelectChange(selectedOption?.value ?? 100)} // Default to Python (ID: 100)
+      placeholder="Select a Language"
     />
   );
 };
