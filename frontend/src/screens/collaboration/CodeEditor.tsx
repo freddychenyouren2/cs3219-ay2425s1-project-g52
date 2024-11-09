@@ -6,9 +6,10 @@ import { yCollab } from "y-codemirror.next";
 import { WebrtcProvider } from "y-webrtc";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
-import axios from "axios";
 import Output from "./Output";
 import { Box, Button } from "@mui/material";
+// import LanguageDropdown from "./LanguageDropdown";
+import { compileCode, checkStatus } from "../../api/judge-api";
 
 import * as random from 'lib0/random'
 
@@ -49,6 +50,11 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
     stderr: "",
   });
   const [processing, setProcessing] = useState<boolean>(false);
+  // const [language, setLanguage] = useState(100);
+
+  // const onSelectChange = (languageId : number) => {
+  //   setLanguage(languageId);
+  // };
 
   useEffect(() => {
     // Set up the WebSocket provider
@@ -85,7 +91,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
       extensions: [
         basicSetup,
         oneDark,
-        python(), // Syntax highlighting for JavaScript
+        python(), // Syntax highlighting for python
         yCollab(yText, provider.awareness, {undoManager}),
       ],
     });
@@ -109,76 +115,42 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
     };
   }, [provider, ydoc, setCodeContents]);
 
-  const handleCompile = () => {
+  const handleCompile = async () => {
     setProcessing(true);
     if (!view) return;
-    const code = view.state.doc.toString()
-    const formData = {
-      language_id: 100, // for python
-      // encode source code in base64
-      source_code: btoa(code),
-      // stdin: btoa(customInput),
-    };
-    const options = {
-      method: "POST",
-      url: process.env.REACT_APP_RAPID_API_URL,
-      params: { base64_encoded: "true", fields: "*" },
-      headers: {
-        "content-type": "application/json",
-        "Content-Type": "application/json",
-        "X-RapidAPI-Host": process.env.REACT_APP_RAPID_API_HOST,
-        "X-RapidAPI-Key": process.env.REACT_APP_RAPID_API_KEY,
-      },
-      data: formData,
-    };
 
-    axios
-      .request(options)
-      .then(function (response) {
-        console.log("res.data", response.data);
-        const token = response.data.token;
-        checkStatus(token);
-      })
-      .catch((err) => {
-        setProcessing(false);
-        let error = err.response ? err.response.data : err;
-        console.log(error);
-      });
-  };
-
-  const checkStatus = async (token: any) => {
-    const options = {
-      method: "GET",
-      url: process.env.REACT_APP_RAPID_API_URL + "/" + token,
-      params: { base64_encoded: "true", fields: "*" },
-      headers: {
-        "X-RapidAPI-Host": process.env.REACT_APP_RAPID_API_HOST,
-        "X-RapidAPI-Key": process.env.REACT_APP_RAPID_API_KEY,
-      },
-    };
+    const code = view.state.doc.toString();
+    
     try {
-      let response = await axios.request(options);
-      let statusId = response.data.status?.id;
-
-      // Processed - we have a result
-      if (statusId === 1 || statusId === 2) {
-        // still processing
-        setTimeout(() => {
-          checkStatus(token)
-        }, 2000)
-        return
-      } else {
-        setProcessing(false)
-        setOutputDetails(response.data)
-        console.log('response.data', response.data)
-        return
-      }
-    } catch (err) {
+      const token = await compileCode({
+        languageId: 100, // Python's ID
+        sourceCode: code,
+      });
+      pollStatus(token);
+    } catch (error) {
       setProcessing(false);
-      console.log("err", err);
+      console.error("Error during compilation:", error);
     }
   };
 
+
+  const pollStatus = async (token: string) => {
+    try {
+      const response = await checkStatus(token);
+      const statusId = response.status?.id;
+
+      if (statusId === 1 || statusId === 2) {
+        setTimeout(() => pollStatus(token), 2000);
+      } else {
+        setProcessing(false);
+        setOutputDetails(response);
+        console.log("Compilation result:", response);
+      }
+    } catch (error) {
+      setProcessing(false);
+      console.error("Error checking status:", error);
+    }
+  };
 
   return (
     <Box
@@ -201,6 +173,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
           overflow: "hidden", // Allow internal areas to scroll without causing parent scroll
         }}
       >
+        {/* <LanguageDropdown onSelectChange={setLanguage}/> */}
         {/* Editor Area */}
         <Box
           id="editor"

@@ -5,15 +5,12 @@ import QuestionHistory from "./QuestionHistory";
 import "./LandingPage.css";
 import { checkActiveSession, getActiveSession } from '../../api/collaboration-api';
 
-
 const LandingPage: React.FC = () => {
   const username = sessionStorage.getItem("username") || "Guest";
   const navigate = useNavigate();
 
   const usageStreak = 7;
-
   const [hasActiveSession, setHasActiveSession] = useState(false);
-
  
   useEffect(() => {
     // Check if the user has an active session
