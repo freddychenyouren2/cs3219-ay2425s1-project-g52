@@ -160,9 +160,7 @@ const Login: React.FC = () => {
                     fontFamily: "Poppins",
                     fontSize: 12,
                   }}
-                >
-                  <a>Forgot your password?</a>
-                </p>
+                ></p>
               </div>
             </Form>
           </div>
