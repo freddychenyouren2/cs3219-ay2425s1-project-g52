@@ -6,7 +6,25 @@ import FormatColorResetIcon from "@mui/icons-material/FormatColorReset";
 import ClearAllIcon from "@mui/icons-material/ClearAll";
 import CloseIcon from "@mui/icons-material/Close";
 
-const Whiteboard = ({
+type WhiteboardProps = {
+  setWhiteBoardOpen: (open: boolean) => void;
+  socket: any;
+  roomId: string;
+  username: string;
+  width: number;
+  height: number;
+  savedLines: LineData[];
+  setSavedLines: (lines: LineData[]) => void;
+};
+
+type LineData = {
+  points: number[];
+  color: string;
+  erasing: boolean;
+  width: number;
+};
+
+const Whiteboard: React.FC<WhiteboardProps> = ({
   setWhiteBoardOpen,
   socket,
   roomId,
@@ -16,23 +34,23 @@ const Whiteboard = ({
   savedLines,
   setSavedLines,
 }) => {
-  const [lines, setLines] = useState(savedLines || []);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [isErasing, setIsErasing] = useState(false);
-  const [currentColor, setCurrentColor] = useState("black"); // Default color is black
-  const [strokeWidth, setStrokeWidth] = useState(2); // Default stroke width
-  const eraserWidth = 20; // Stroke width for erasing
-  const [anchorEl, setAnchorEl] = useState(null); // Anchor for color selection menu
+  const [lines, setLines] = useState<LineData[]>(savedLines || []);
+  const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  const [isErasing, setIsErasing] = useState<boolean>(false);
+  const [currentColor, setCurrentColor] = useState<string>("black");
+  const [strokeWidth, setStrokeWidth] = useState<number>(2);
+  const eraserWidth = 20;
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const throttleTimeout = useRef(null);
+  const throttleTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const emitDrawingData = (updatedLines) => {
+  const emitDrawingData = (updatedLines: LineData[]): void => {
     if (socket && updatedLines.length > 0) {
       socket.emit("drawing", { roomId, lines: updatedLines });
     }
   };
 
-  const emitThrottledData = (updatedLines) => {
+  const emitThrottledData = (updatedLines: LineData[]): void => {
     if (!throttleTimeout.current) {
       throttleTimeout.current = setTimeout(() => {
         emitDrawingData(updatedLines);
@@ -43,7 +61,7 @@ const Whiteboard = ({
 
   useEffect(() => {
     if (socket) {
-      socket.on("drawing", (newLines) => {
+      socket.on("drawing", (newLines: { lines: LineData[] }) => {
         setLines(newLines.lines);
       });
 
@@ -57,82 +75,84 @@ const Whiteboard = ({
     setSavedLines(lines);
   }, [lines, setSavedLines]);
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: any): void => {
     setIsDrawing(true);
     const pos = e.target.getStage().getPointerPosition();
-    setLines([
-      ...lines,
-      { points: [pos.x, pos.y], color: currentColor, erasing: isErasing, width: strokeWidth },
-    ]);
+    if (pos) {
+      setLines([
+        ...lines,
+        { points: [pos.x, pos.y], color: currentColor, erasing: isErasing, width: strokeWidth },
+      ]);
+    }
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: any): void => {
     if (!isDrawing) return;
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
-    const lastLine = lines[lines.length - 1];
-    lastLine.points = lastLine.points.concat([point.x, point.y]);
-    const updatedLines = lines.concat();
-    setLines(updatedLines);
-    emitThrottledData(updatedLines);
+    if (point) {
+      const lastLine = lines[lines.length - 1];
+      lastLine.points = lastLine.points.concat([point.x, point.y]);
+      const updatedLines = lines.concat();
+      setLines(updatedLines);
+      emitThrottledData(updatedLines);
+    }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (): void => {
     setIsDrawing(false);
   };
 
-  const handleClear = () => {
+  const handleClear = (): void => {
     setLines([]);
     if (socket) {
       socket.emit("drawing", { roomId, lines: [] });
     }
   };
 
-  const toggleEraseMode = () => {
+  const toggleEraseMode = (): void => {
     if (isErasing) {
       setIsErasing(false);
-      setCurrentColor("black"); // Reset to default drawing color
-      setStrokeWidth(2); // Reset to default drawing stroke width
+      setCurrentColor("black");
+      setStrokeWidth(2);
     } else {
       setIsErasing(true);
-      setCurrentColor("white"); // Set color to white when erasing
-      setStrokeWidth(eraserWidth); // Set stroke width to eraserWidth when erasing
+      setCurrentColor("white");
+      setStrokeWidth(eraserWidth);
     }
   };
 
-  // Open the color picker menu
-  const handleClick = (event) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>): void => {
     setAnchorEl(event.currentTarget);
   };
 
-  // Close the color picker menu
-  const handleClose = () => {
+  const handleClose = (): void => {
     setAnchorEl(null);
   };
 
-  // Change the current color
-  const changeColor = (color) => {
+  const changeColor = (color: string): void => {
     setCurrentColor(color);
-    setIsErasing(false); // Turn off erasing when changing color
-    setStrokeWidth(2); // Reset to default drawing stroke width
+    setIsErasing(false);
+    setStrokeWidth(2);
   };
 
-  const closeWhiteboard = () => {
-    console.log("lines", lines);
-    console.log("username", username);
+  const closeWhiteboard = (): void => {
     setSavedLines(lines);
-    socket.emit("toggleWhiteboardOff", roomId); // Send roomId directly, not as an object
+    if (socket) {
+      socket.emit("toggleWhiteboardOff", roomId);
+    }
   };
 
   useEffect(() => {
-    socket.on("closeWhiteboard", () => {
-      console.log("Closing whiteboard");
-      setWhiteBoardOpen(false);
-    });
-    return () => {
-      socket.off("closeWhiteboard");
-    };
-  }, [socket]);
+    if (socket) {
+      socket.on("closeWhiteboard", () => {
+        setWhiteBoardOpen(false);
+      });
+      return () => {
+        socket.off("closeWhiteboard");
+      };
+    }
+  }, [socket, setWhiteBoardOpen]);
 
   return (
     <div style={{ width, height }}>
@@ -150,7 +170,7 @@ const Whiteboard = ({
               key={i}
               points={line.points}
               stroke={line.erasing ? "white" : line.color}
-              strokeWidth={line.erasing ? 20 : 2}
+              strokeWidth={line.erasing ? eraserWidth : line.width}
               tension={0.5}
               lineCap="round"
               globalCompositeOperation="source-over"
@@ -159,7 +179,6 @@ const Whiteboard = ({
         </Layer>
       </Stage>
 
-      {/* Icons for tools */}
       <div
         style={{
           position: "absolute",
@@ -170,7 +189,6 @@ const Whiteboard = ({
           gap: "10px",
         }}
       >
-        {/* Pencil Icon with color picker */}
         <IconButton
           onClick={handleClick}
           color={!isErasing ? "primary" : "default"}
@@ -206,7 +224,6 @@ const Whiteboard = ({
           </MenuItem>
         </Menu>
 
-        {/* Eraser Icon */}
         <IconButton
           onClick={toggleEraseMode}
           color={isErasing ? "primary" : "default"}
@@ -214,12 +231,10 @@ const Whiteboard = ({
           <FormatColorResetIcon />
         </IconButton>
 
-        {/* Clear All Icon */}
         <IconButton onClick={handleClear} color="default">
           <ClearAllIcon />
         </IconButton>
 
-        {/* Close Whiteboard Icon */}
         <IconButton onClick={closeWhiteboard} color="default">
           <CloseIcon />
         </IconButton>

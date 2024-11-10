@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import Peer from "peerjs";
+import React, { useEffect, useRef, useState } from "react";
+import Peer, { MediaConnection } from "peerjs";
 import { IconButton, Typography } from "@mui/material";
 import VideocamOffIcon from "@mui/icons-material/VideocamOff";
 import MicOffIcon from "@mui/icons-material/MicOff";
@@ -7,45 +7,71 @@ import VideocamIcon from "@mui/icons-material/Videocam";
 import MicIcon from "@mui/icons-material/Mic";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import Whiteboard from "./Whiteboard";
+import { Socket } from "socket.io-client";
 
-const VideoChat = ({ socket, username, roomId, width, height, savedLines, setSavedLines }) => {
-  const [peerId, setPeerId] = useState("");
-  const [remotePeerIdValue, setRemotePeerIdValue] = useState("");
-  const [canStartCall, setCanStartCall] = useState(false);
-  const [CALLER, setCALLER] = useState("");
-  const [isCameraOn, setIsCameraOn] = useState(true);
-  const [isMicOn, setIsMicOn] = useState(true);
-  const remoteVideoRef = useRef(null);
-  const currentUserVideoRef = useRef(null);
-  const peerInstance = useRef(null);
-  const mediaStreamRef = useRef(null);
-  const [showWhiteboard, setShowWhiteboard] = useState(false);
+interface VideoChatProps {
+  socket: Socket;
+  username: string;
+  roomId: string;
+  width: number;
+  height: number;
+  savedLines: any;
+  setSavedLines: React.Dispatch<React.SetStateAction<any>>;
+}
+
+const VideoChat: React.FC<VideoChatProps> = ({
+  socket,
+  username,
+  roomId,
+  width,
+  height,
+  savedLines,
+  setSavedLines,
+}) => {
+  const [peerId, setPeerId] = useState<string>("");
+  const [remotePeerIdValue, setRemotePeerIdValue] = useState<string>("");
+  const [canStartCall, setCanStartCall] = useState<boolean>(false);
+  const [CALLER, setCALLER] = useState<string>("");
+  const [isCameraOn, setIsCameraOn] = useState<boolean>(true);
+  const [isMicOn, setIsMicOn] = useState<boolean>(true);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const currentUserVideoRef = useRef<HTMLVideoElement>(null);
+  const peerInstance = useRef<Peer | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const [showWhiteboard, setShowWhiteboard] = useState<boolean>(false);
 
   useEffect(() => {
     // Listen for the "roomFull" event from the backend
-    socket.on("roomFull", (data) => {
-      const { roomId, participants } = data;
-      const caller = participants[0];
-      setCALLER(caller);
-      const receiver = participants[1];
-      setPeerId(roomId + "-" + username);
-      setRemotePeerIdValue(
-        roomId + "-" + (username === caller ? receiver : caller)
-      );
-      setCanStartCall(true);
-    });
+    socket.on(
+      "roomFull",
+      (data: { roomId: string; participants: string[] }) => {
+        const { roomId, participants } = data;
+        const caller = participants[0];
+        setCALLER(caller);
+        const receiver = participants[1];
+        setPeerId(roomId + "-" + username);
+        setRemotePeerIdValue(
+          roomId + "-" + (username === caller ? receiver : caller)
+        );
+        setCanStartCall(true);
+      }
+    );
 
     // Cleanup on component unmount
     return () => {
       socket.off("roomFull");
     };
-  }, [socket]);
+  }, [socket, username]);
 
   useEffect(() => {
     socket.on("openWhiteboard", () => {
       console.log("Opening whiteboard");
       setShowWhiteboard(true);
     });
+
+    return () => {
+      socket.off("openWhiteboard");
+    };
   }, [socket]);
 
   useEffect(() => {
@@ -55,67 +81,85 @@ const VideoChat = ({ socket, username, roomId, width, height, savedLines, setSav
 
     const peer = new Peer(peerId);
 
-    peer.on("call", (call) => {
-      var getUserMedia =
-        navigator.getUserMedia ||
-        navigator.webkitGetUserMedia ||
-        navigator.mozGetUserMedia;
+    peer.on("call", (call: MediaConnection) => {
+      const getUserMedia = navigator.mediaDevices.getUserMedia.bind(
+        navigator.mediaDevices
+      );
 
-      getUserMedia({ video: true, audio: true }, (mediaStream) => {
-        mediaStreamRef.current = mediaStream;
-        currentUserVideoRef.current.srcObject = mediaStream;
-        currentUserVideoRef.current.onloadedmetadata = () => {
-          currentUserVideoRef.current.play().catch((error) => {
-            console.error("Error playing local video:", error);
+      getUserMedia({ video: true, audio: true })
+        .then((mediaStream) => {
+          mediaStreamRef.current = mediaStream;
+          if (currentUserVideoRef.current) {
+            currentUserVideoRef.current.srcObject = mediaStream;
+            currentUserVideoRef.current.onloadedmetadata = () => {
+              currentUserVideoRef.current?.play().catch((error) => {
+                console.error("Error playing local video:", error);
+              });
+            };
+          }
+
+          call.answer(mediaStream);
+          call.on("stream", (remoteStream) => {
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = remoteStream;
+              remoteVideoRef.current.onloadedmetadata = () => {
+                remoteVideoRef.current?.play().catch((error) => {
+                  console.error("Error playing remote video:", error);
+                });
+              };
+            }
           });
-        };
-
-        call.answer(mediaStream);
-        call.on("stream", (remoteStream) => {
-          remoteVideoRef.current.srcObject = remoteStream;
-          remoteVideoRef.current.onloadedmetadata = () => {
-            remoteVideoRef.current.play().catch((error) => {
-              console.error("Error playing remote video:", error);
-            });
-          };
+        })
+        .catch((error) => {
+          console.error("Error accessing media devices.", error);
         });
-      });
     });
 
     peerInstance.current = peer;
     if (username === CALLER) {
       setTimeout(() => {
-        call(remotePeerIdValue);
+        initiateCall(remotePeerIdValue);
       }, 2000);
     }
-  }, [canStartCall]);
 
-  const call = (remotePeerId) => {
-    var getUserMedia =
-      navigator.getUserMedia ||
-      navigator.webkitGetUserMedia ||
-      navigator.mozGetUserMedia;
+    return () => {
+      peer.destroy();
+    };
+  }, [canStartCall, peerId, username, CALLER, remotePeerIdValue]);
 
-    getUserMedia({ video: true, audio: true }, (mediaStream) => {
-      mediaStreamRef.current = mediaStream;
-      currentUserVideoRef.current.srcObject = mediaStream;
-      currentUserVideoRef.current.onloadedmetadata = () => {
-        currentUserVideoRef.current.play().catch((error) => {
-          console.error("Error playing local video:", error);
+  const initiateCall = (remotePeerId: string) => {
+    const getUserMedia = navigator.mediaDevices.getUserMedia.bind(
+      navigator.mediaDevices
+    );
+
+    getUserMedia({ video: true, audio: true })
+      .then((mediaStream) => {
+        mediaStreamRef.current = mediaStream;
+        if (currentUserVideoRef.current) {
+          currentUserVideoRef.current.srcObject = mediaStream;
+          currentUserVideoRef.current.onloadedmetadata = () => {
+            currentUserVideoRef.current?.play().catch((error) => {
+              console.error("Error playing local video:", error);
+            });
+          };
+        }
+
+        const call = peerInstance.current?.call(remotePeerId, mediaStream);
+
+        call?.on("stream", (remoteStream) => {
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = remoteStream;
+            remoteVideoRef.current.onloadedmetadata = () => {
+              remoteVideoRef.current?.play().catch((error) => {
+                console.error("Error playing remote video:", error);
+              });
+            };
+          }
         });
-      };
-
-      const call = peerInstance.current.call(remotePeerId, mediaStream);
-
-      call.on("stream", (remoteStream) => {
-        remoteVideoRef.current.srcObject = remoteStream;
-        remoteVideoRef.current.onloadedmetadata = () => {
-          remoteVideoRef.current.play().catch((error) => {
-            console.error("Error playing remote video:", error);
-          });
-        };
+      })
+      .catch((error) => {
+        console.error("Error accessing media devices.", error);
       });
-    });
   };
 
   // Toggle camera
@@ -139,6 +183,7 @@ const VideoChat = ({ socket, username, roomId, width, height, savedLines, setSav
       }
     }
   };
+
   const toggleWhiteboard = () => {
     // Logic to open or close the whiteboard
     console.log("Whiteboard button clicked!");
@@ -148,7 +193,7 @@ const VideoChat = ({ socket, username, roomId, width, height, savedLines, setSav
   useEffect(() => {
     console.log("savedLines", savedLines);
   }, [savedLines]);
-  
+
   if (!canStartCall) {
     return (
       <div>

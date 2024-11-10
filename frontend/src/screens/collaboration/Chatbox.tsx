@@ -8,8 +8,20 @@ import {
   Paper,
 } from "@mui/material";
 
+type Message = {
+  username: string;
+  text: string;
+  timestamp: string;
+};
+
+type ChatBoxProps = {
+  socket: any;
+  roomId: string;
+  username: string;
+};
+
 // Helper function to generate a random color
-const getRandomColor = () => {
+const getRandomColor = (): string => {
   const letters = "0123456789ABCDEF";
   let color = "#";
   for (let i = 0; i < 6; i++) {
@@ -18,13 +30,13 @@ const getRandomColor = () => {
   return color;
 };
 
-const ChatBox = ({ socket, roomId, username }) => {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [userColors, setUserColors] = useState({});
-  const messageEndRef = useRef(null);
+const ChatBox: React.FC<ChatBoxProps> = ({ socket, roomId, username }) => {
+  const [message, setMessage] = useState<string>("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [userColors, setUserColors] = useState<{ [key: string]: string }>({});
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = (): void => {
     if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -36,7 +48,7 @@ const ChatBox = ({ socket, roomId, username }) => {
 
   useEffect(() => {
     if (socket) {
-      socket.on("receiveMessage", (newMessage) => {
+      socket.on("receiveMessage", (newMessage: Message) => {
         setUserColors((prevColors) => {
           if (!prevColors[newMessage.username]) {
             return { ...prevColors, [newMessage.username]: getRandomColor() };
@@ -53,32 +65,31 @@ const ChatBox = ({ socket, roomId, username }) => {
     }
   }, [socket]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = (): void => {
     if (message.trim() && socket) {
       const newMessage = {
-        roomId,
         username,
         text: message.trim(),
         timestamp: new Date().toLocaleTimeString(),
       };
 
-      socket.emit("sendMessage", newMessage);
+      socket.emit("sendMessage", { ...newMessage, roomId });
 
       setMessage("");
     }
   };
 
-  const handleEnterKey = (e) => {
+  const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter") {
       handleSendMessage();
     }
   };
 
-  const getFirstLetter = (name) => {
+  const getFirstLetter = (name: string): string => {
     return name.charAt(0).toUpperCase();
   };
 
-  const getMessageBoxWidth = (message) => {
+  const getMessageBoxWidth = (message: string): string => {
     return message.length > 100 ? "500px" : "300px";
   };
 
