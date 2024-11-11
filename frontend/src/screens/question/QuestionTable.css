@@ -6,6 +6,8 @@
 .data-grid .MuiDataGrid-cell {
     color: white; /* Data row font color */
     white-space: break-spaces;
+    display: flex;
+    align-items: center;
 }
   
 .data-grid .MuiDataGrid-row {

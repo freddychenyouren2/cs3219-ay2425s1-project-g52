@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { Typography } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Question } from "../../api/interfaces";
@@ -30,13 +30,26 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ questions, onEdit, onDele
       <Typography 
         variant="body1" 
         onClick={() => handleTitleClick(params.row)} 
-        sx={{ cursor: 'pointer', textDecoration: 'underline', color: 'primary.main' }}
+        sx={{ 
+          cursor: 'pointer', 
+          textDecoration: 'underline', 
+          color: '#00BFFF',
+          display: 'flex',
+          alignItems: 'center' }}
       >
         {params.value}
       </Typography>
       ),  
     },
-    { field: "qCategory", headerName: "Category", flex: 2, renderCell: (params) => params.row.qCategory.join(", ") },
+    { field: "qCategory", headerName: "Category", flex: 2, renderCell: (params) => (
+      <Box component="span" sx={{ display: 'flex', flexDirection: 'column' }}>
+        {params.row.qCategory.map((cat, index) => (
+          <Typography variant="body2" key={index}>
+            {cat}
+          </Typography>
+        ))}
+      </Box>
+    )},
     { field: "qComplexity", headerName: "Complexity", flex: 1 },
   ];
 
