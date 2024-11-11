@@ -4,7 +4,6 @@ import { EditorState } from "@codemirror/state";
 import * as Y from "yjs";
 import { yCollab } from "y-codemirror.next";
 import { WebrtcProvider } from "y-webrtc";
-import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 import Output from "./Output";
 import { Box, Button } from "@mui/material";

@@ -50,19 +50,30 @@ const CollaborationPage = () => {
     return () => {
       socket.off("roomUsers");
     };
-  });
+  }, [socket]);
 
   useEffect(() => {
-    // Listen for the socket disconnect event
-    socket.on("disconnect", () => {
+    console.log("im here");
+    socket.on("partnerDisconnect", () => {
+      console.log("friend left");
+      setUsersInRoom((prevUsers) => prevUsers.filter((user) => user === username));
+    });
+
+    return () => {
+      socket.off("partnerDisconnect");
+    };
+  }, [socket, username]);
+
+  useEffect(() => {
+    socket.on("endSession", () => {
       alert("The session has been ended.");
       navigate("/landingPage");
     });
   
     return () => {
-      socket.off("disconnect");
+      socket.off("endSession");
     };
-  });
+  }, [socket]);
 
   const handleEndSession = () => {
     socket.emit("endSession", roomId, codeContents, savedLines);
