@@ -4,6 +4,7 @@ import { Typography } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Question } from "../../api/interfaces";
 import QuestionDescriptionModal from './QuestionDescriptionModal';
+import "./QuestionTable.css";
 
 interface QuestionTableProps {
   questions: Question[];
@@ -15,6 +16,14 @@ interface QuestionTableProps {
 const QuestionTable: React.FC<QuestionTableProps> = ({ questions, onEdit, onDelete, onOpenModal }) => {
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const username = sessionStorage.getItem("username") || "Guest";
+  const isAdmin = (sessionStorage.getItem("isAdmin") === "true") || false;
+
+  const handleTitleClick = (question: Question) => {
+    setSelectedQuestion(question);
+    setDescriptionModalOpen(true);
+  };
+
   const columns: GridColDef<Question>[] = [
     { field: "qId", headerName: "Question", flex: 1},
     { field: "qTitle", headerName: "Title", flex: 3, renderCell: (params) => (
@@ -29,7 +38,11 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ questions, onEdit, onDele
     },
     { field: "qCategory", headerName: "Category", flex: 2, renderCell: (params) => params.row.qCategory.join(", ") },
     { field: "qComplexity", headerName: "Complexity", flex: 1 },
-    {
+  ];
+
+  // Add "Actions" column only if the user is an admin
+  if (isAdmin) {
+    columns.push({
       field: "actions",
       headerName: "Actions",
       flex: 2,
@@ -52,13 +65,8 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ questions, onEdit, onDele
           </Button>
         </>
       ),
-    },
-  ];
-
-  const handleTitleClick = (question: Question) => {
-    setSelectedQuestion(question);
-    setDescriptionModalOpen(true);
-  };
+    });
+  }
 
   return (
     <>
