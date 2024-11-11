@@ -1,6 +1,3 @@
-# Specify the version of the Docker Compose.
-version: "3.9"
-
 # Define the services and applications that make up PeerPrep G52.
 services:
   frontend:
@@ -51,3 +48,21 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
+
+  collaboration-service:
+    build: ./backend/collaboration-service # Path to the directory containing the Dockerfile for building the backend/user-service image.
+    ports:
+      - 4000:4000 # Maps port 3001 on the host to port 3001 in the container, making the app accessible on the host.
+    env_file:
+      - ./backend/collaboration-service/.env
+    # volumes: # Not necessarily needed for now
+    # networks: # Not necessarily needed for now
+
+  history-service:
+    build: ./backend/history-service # Path to the directory containing the Dockerfile for building the backend/user-service image.
+    ports:
+      - 5001:5001 # Maps port 5001 on the host to port 5001 in the container, making the app accessible on the host.
+    env_file:
+      - ./backend/history-service/.env
+    # volumes: # Not necessarily needed for now
+    # networks: # Not necessarily needed for now

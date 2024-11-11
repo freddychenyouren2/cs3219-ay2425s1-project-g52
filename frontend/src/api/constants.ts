@@ -12,4 +12,16 @@ const api = ky.extend({
 });
 
 const userServiceApi = process.env.REACT_APP_USER_SERVICE_BASE_URL;
-export { api, userServiceApi };
+
+const collaborationApi = ky.extend({
+  prefixUrl: `${process.env.REACT_APP_COLLABORATION_SERVICE_BASE_URL}`,
+  hooks: {
+    beforeError: [
+      (error) => {
+        return error;
+      },
+    ],
+  },
+});
+
+export { api, userServiceApi, collaborationApi };
