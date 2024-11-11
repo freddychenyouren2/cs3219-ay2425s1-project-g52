@@ -1,0 +1,13 @@
+.data-grid .MuiDataGrid-columnHeaders {
+    background-color: white;
+    color: black; /* Header font color */
+}
+  
+.data-grid .MuiDataGrid-cell {
+    color: white; /* Data row font color */
+    white-space: break-spaces;
+}
+  
+.data-grid .MuiDataGrid-row {
+    background-color: #1a1a1a; /* Data row background color */
+}
