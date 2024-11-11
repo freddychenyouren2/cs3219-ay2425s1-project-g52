@@ -6,8 +6,8 @@ import "./LandingPage.css";
 import { checkActiveSession, getActiveSession } from '../../api/collaboration-api';
 
 const LandingPage: React.FC = () => {
-  const username = sessionStorage.getItem("username") || "Guest";
-  const isAdmin = sessionStorage.getItem("isAdmin") || "false";
+  const username: string = sessionStorage.getItem("username") || "Guest";
+  const isAdmin: boolean = (sessionStorage.getItem("isAdmin") === "true") || false;
   const navigate = useNavigate();
 
   // const usageStreak = 7;
@@ -85,10 +85,15 @@ const LandingPage: React.FC = () => {
             )}
 
             {/* Conditionally render Question Lists button for admin */}
-            {isAdmin==="true" && (
+            {isAdmin && (
               <div className="admin-section">
                 <button className="access-questionsPage-button"
-                  onClick={() => navigate("/questionsPage")}
+                  onClick={() => navigate("/questionsPage", {
+                    state: { 
+                      username: username, 
+                      isAdmin: isAdmin
+                    },
+                  })}
                 >
                   Access Question Database
                 </button>

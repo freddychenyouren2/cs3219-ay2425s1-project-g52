@@ -14,6 +14,7 @@ const QuestionManager: React.FC = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
   const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
 
+  const isAdmin = (sessionStorage.getItem("isAdmin") === "true") || false;
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -87,18 +88,22 @@ const QuestionManager: React.FC = () => {
         sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, width: "100%" }}
       >
         <Typography variant="h4" color="white" gutterBottom sx={{ flexGrow: 4, textAlign: "center" }}>
-          Questions List
+          Question Database
         </Typography>
 
-        <Button
+
+        {isAdmin && (
+          <Button
           variant="contained"
           color="success"
           startIcon={<AddIcon />}
           onClick={() => handleOpenModal(null)}
           sx={{ marginRight: 1 }}
-        >
-          Add Question
-        </Button>
+          >
+            Add Question
+          </Button>
+        )}
+        
       </Box>
       
       <QuestionTable
