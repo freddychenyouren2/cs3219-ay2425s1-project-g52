@@ -84,21 +84,18 @@ const LandingPage: React.FC = () => {
               </button>
             )}
 
-            {/* Conditionally render Question Lists button for admin */}
-            {isAdmin && (
-              <div className="admin-section">
-                <button className="access-questionsPage-button"
-                  onClick={() => navigate("/questionsPage", {
-                    state: { 
-                      username: username, 
-                      isAdmin: isAdmin
-                    },
-                  })}
-                >
-                  Access Question Database
-                </button>
-              </div>
-            )}
+            <div className="access-questionPage">
+              <button className="access-questionsPage-button"
+                onClick={() => navigate("/questionsPage", {
+                  state: { 
+                    username: username, 
+                    isAdmin: isAdmin
+                  },
+                })}
+              >
+                Access Question Database
+              </button>
+            </div>
 
             {hasActiveSession && (
               <div>
