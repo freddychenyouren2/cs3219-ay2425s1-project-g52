@@ -3,6 +3,7 @@ import amqp from "amqplib";
 let channel;
 let connection;
 
+// Connect to RabbitMQ
 export async function connectRabbitMQ() {
   try {
     connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://rabbitmq:5672");

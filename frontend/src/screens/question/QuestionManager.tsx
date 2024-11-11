@@ -4,8 +4,8 @@ import AddIcon from "@mui/icons-material/Add";
 import QuestionTable from './QuestionTable';
 import QuestionModal from './QuestionModal';
 import ConfirmModal from './ConfirmModal'; 
-import { Question } from '../api/interfaces';
-import { fetchQuestions, addQuestion, editQuestion, deleteQuestion } from '../api/question-api';
+import { Question } from '../../api/interfaces';
+import { fetchQuestions, addQuestion, editQuestion, deleteQuestion } from '../../api/question-api';
 
 const QuestionManager: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);

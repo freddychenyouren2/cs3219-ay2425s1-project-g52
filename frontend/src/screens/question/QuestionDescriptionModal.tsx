@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, Box, Typography, Button } from '@mui/material';
-import { Question } from '../api/interfaces';
+import { Question } from '../../api/interfaces';
 
 interface QuestionDescriptionModalProps {
   open: boolean;

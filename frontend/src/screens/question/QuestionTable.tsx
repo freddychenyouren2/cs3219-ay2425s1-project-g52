@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from "@mui/material";
 import { Typography } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Question } from "../api/interfaces";
+import { Question } from "../../api/interfaces";
 import QuestionDescriptionModal from './QuestionDescriptionModal';
 
 interface QuestionTableProps {

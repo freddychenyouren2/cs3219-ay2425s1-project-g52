@@ -5,8 +5,14 @@ interface Question {
     qDescription: string;
     qCategory: string[];
     qComplexity: string;
-  }
+}
+
+interface Room {
+  roomId: string;
+  participants: string[];
+  question: Question;
+}
 
   export type {
-    Question
+    Question, Room
   };
