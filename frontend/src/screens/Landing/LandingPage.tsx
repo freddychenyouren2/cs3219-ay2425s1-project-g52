@@ -7,9 +7,10 @@ import { checkActiveSession, getActiveSession } from '../../api/collaboration-ap
 
 const LandingPage: React.FC = () => {
   const username = sessionStorage.getItem("username") || "Guest";
+  const isAdmin = sessionStorage.getItem("isAdmin") || "false";
   const navigate = useNavigate();
 
-  const usageStreak = 7;
+  // const usageStreak = 7;
   const [hasActiveSession, setHasActiveSession] = useState(false);
  
   useEffect(() => {
@@ -77,19 +78,32 @@ const LandingPage: React.FC = () => {
           <h1 className="welcome-message">Welcome, {username}</h1>
 
           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-          <button className="start-session-button" onClick={handleStartSession} disabled={hasActiveSession}>
-            Start a Session
-          </button>
-
-          {hasActiveSession && (
-            <div>
-              <p style={{marginBottom: "10px"}}>You have an active session. Please end it to begin a new one.</p>
-              <button className="start-session-button" onClick={handleResumeSession}>
-                Resume Session
+            {!hasActiveSession && (
+              <button className="start-session-button" onClick={handleStartSession}>
+                Start a Session
               </button>
-            </div>
-          )}
-        </div>
+            )}
+
+            {/* Conditionally render Question Lists button for admin */}
+            {isAdmin==="true" && (
+              <div className="admin-section">
+                <button className="access-questionsPage-button"
+                  onClick={() => navigate("/questionsPage")}
+                >
+                  Access Question Database
+                </button>
+              </div>
+            )}
+
+            {hasActiveSession && (
+              <div>
+                <p style={{marginBottom: "10px"}}>You have an active session. Please end it to begin a new one.</p>
+                <button className="start-session-button" onClick={handleResumeSession}>
+                  Resume Session
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -99,13 +113,13 @@ const LandingPage: React.FC = () => {
           <QuestionHistory />
         </section>
 
-        <section className="streak-section">
+        {/* <section className="streak-section">
           <h2 className="section-title">Usage Streak</h2>
           <div className="streak-display">
             <span className="streak-number">{usageStreak}</span>
             <span className="streak-label">Days</span>
           </div>
-        </section>
+        </section> */}
       </main>
     </div>
   );
