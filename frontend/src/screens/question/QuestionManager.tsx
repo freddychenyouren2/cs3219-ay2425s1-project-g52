@@ -6,6 +6,9 @@ import QuestionModal from './QuestionModal';
 import ConfirmModal from './ConfirmModal'; 
 import { Question } from '../../api/interfaces';
 import { fetchQuestions, addQuestion, editQuestion, deleteQuestion } from '../../api/question-api';
+import { FiArrowLeft } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import "./QuestionManager.css";
 
 const QuestionManager: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -15,6 +18,8 @@ const QuestionManager: React.FC = () => {
   const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
 
   const isAdmin = (sessionStorage.getItem("isAdmin") === "true") || false;
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadQuestions = async () => {
@@ -84,8 +89,12 @@ const QuestionManager: React.FC = () => {
       alignItems="center"
       sx={{ width: '75%', margin: '0 auto' }}
     >
+      <button onClick={() => navigate("/landingPage")} className="back-button">
+        <FiArrowLeft className="back-icon" size={0} />
+      </button>
+      
       <Box
-        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, width: "100%" }}
+        sx={{ display: "flex", margin:3, justifyContent: "space-between", alignItems: "center", mb: 2, width: "100%" }}
       >
         <Typography variant="h4" color="white" gutterBottom sx={{ flexGrow: 4, textAlign: "center" }}>
           Question Database
