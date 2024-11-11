@@ -25,8 +25,8 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ questions, onEdit, onDele
   };
 
   const columns: GridColDef<Question>[] = [
-    { field: "qId", headerName: "Question", flex: 1},
-    { field: "qTitle", headerName: "Title", flex: 3, renderCell: (params) => (
+    { field: "qId", headerName: "Question",flex: 1, minWidth: 100},
+    { field: "qTitle", headerName: "Title", flex: 4, minWidth: 300, renderCell: (params) => (
       <Typography 
         variant="body1" 
         onClick={() => handleTitleClick(params.row)} 
@@ -41,16 +41,37 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ questions, onEdit, onDele
       </Typography>
       ),  
     },
-    { field: "qCategory", headerName: "Category", flex: 2, renderCell: (params) => (
+    { field: "qCategory", headerName: "Category", flex: 2, minWidth: 200, renderCell: (params) => (
       <Box component="span" sx={{ display: 'flex', flexDirection: 'column' }}>
         {params.row.qCategory.map((cat, index) => (
-          <Typography variant="body2" key={index}>
+          <Typography variant="body2" key={index} sx={{ padding: '2px 0' }}>
             {cat}
           </Typography>
         ))}
       </Box>
     )},
-    { field: "qComplexity", headerName: "Complexity", flex: 1 },
+    { field: "qComplexity", headerName: "Complexity", flex: 1, minWidth: 100, renderCell: (params) => {
+      let complexityClass;
+      switch (params.value) {
+        case "Easy":
+          complexityClass = "complexity complexity-easy";
+          break;
+        case "Medium":
+          complexityClass = "complexity complexity-medium";
+          break;
+        case "Hard":
+          complexityClass = "complexity complexity-hard";
+          break;
+        default:
+          complexityClass = "complexity"; // Fallback for unknown levels
+      }
+      
+      return (
+        <span className={complexityClass}>
+          {params.value}
+        </span>
+      );
+    }, },
   ];
 
   // Add "Actions" column only if the user is an admin
@@ -59,6 +80,7 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ questions, onEdit, onDele
       field: "actions",
       headerName: "Actions",
       flex: 2,
+      minWidth: 200,
       renderCell: (params) => (
         <>
           <Button
@@ -88,7 +110,7 @@ const QuestionTable: React.FC<QuestionTableProps> = ({ questions, onEdit, onDele
         rows={questions}
         columns={columns}
         getRowId={(row) => row._id || ''}
-        sx={{ width: '100%' }}
+        sx={{ width: '100%', overflowX: 'auto' }}
       />
       <QuestionDescriptionModal
         open={descriptionModalOpen}
