@@ -10,12 +10,13 @@ import { Question } from '../../api/interfaces';
 interface GeminiAIQueryProps {
   question: Question;
   codeContext: string;
+  codingLanguage: string;
 }
 
 const apikey = process.env.REACT_APP_GEMINI_API_KEY || "";
 console.log(apikey);
 
-const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) => {
+const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext, codingLanguage }) => {
   const [inputValue, setInputValue] = useState('');
   const [promptResponses, setPromptResponses] = useState<{ prompt: string; response: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -85,12 +86,13 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
         Current Code:\n${codeContext}\n\n 
         Conversation Context:\n${conversationContext}\n\n
         
-        If you are sending code solution, please send in PYTHON unless specified otherwise, and explain your code solution. \n\n
+        If you are sending code solution, please explain your code solution. \n\n
         Respond as natural as possible. \n\n
 
         You can respond small talks with small talks, but remind the users to focus on the task at hand.\n\n
         
-        User's Latest Question: ${inputValue}`;
+        User's Latest Question: ${inputValue}
+        Current Programming Language:\n${codingLanguage}\n\n. Use this Programming Language unless specified otherwise in User's Latest Prompt.`;
 
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(fullPrompt);
