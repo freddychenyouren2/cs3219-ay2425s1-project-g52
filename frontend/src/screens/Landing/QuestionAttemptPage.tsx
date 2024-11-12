@@ -4,6 +4,10 @@ import CodeEditorHistory from "./CodeEditorHistory";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import WhiteboardHistory from "./WhiteBoardHistory";
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';  // Import KaTeX styles for LaTeX rendering
 
 const QuestionAttemptPage: React.FC = () => {
   const location = useLocation();
@@ -71,9 +75,17 @@ const QuestionAttemptPage: React.FC = () => {
         <Typography
           variant="body1"
           component="body"
-          sx={{ fontWeight: 700, color: "gray" }}
+          sx={{ fontWeight: 700, color: "white", textAlign: "left" }}
         >
-          {question.description}
+          {/* Render Markdown and LaTeX using react-markdown */}
+          <Box sx={{ marginBottom: 2 }}>
+            <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {question.description || 'Error Displaying Question Description...'}
+            </ReactMarkdown>
+          </Box>
         </Typography>
       </Box>
 
