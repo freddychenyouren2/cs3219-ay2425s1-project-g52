@@ -26,6 +26,13 @@ const QuestionManager: React.FC = () => {
 
   const handleAdd = async (newData: Omit<Question, 'qId'>) => {
     try {
+      // Check for duplicate title
+      const isDuplicateTitle = questions.some(q => q.qTitle === newData.qTitle);
+      if (isDuplicateTitle) {
+        console.error('Failed to add a question: A question with this title already exists.');
+        return; // Exit if duplicate title found
+      }
+
       let newQId = 1;
       const existingQId = questions.map(q => q.qId);
       for (let i = 1; i <= questions.length + 1; i++) {
@@ -44,6 +51,17 @@ const QuestionManager: React.FC = () => {
   };
   const handleEdit = async (id: string, updatedData: Partial<Question>) => {
     try {
+      // Check for duplicate title if title is being updated
+      if (updatedData.qTitle) {
+        const isDuplicateTitle = questions.some(
+          q => q.qTitle === updatedData.qTitle && q._id !== id
+        );
+        if (isDuplicateTitle) {
+          console.error('Failed to update question: A question with this title already exists.');
+          return; // Exit if duplicate title found
+        }
+      }
+
       await editQuestion(id, updatedData);
       setQuestions(prevQuestions => 
         prevQuestions.map(question => (question._id === id ? { ...question, ...updatedData } : question))
