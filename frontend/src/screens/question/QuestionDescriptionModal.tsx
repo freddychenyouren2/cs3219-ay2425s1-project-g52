@@ -38,7 +38,7 @@ const QuestionDescriptionModal: React.FC<QuestionDescriptionModalProps> = ({ ope
             remarkPlugins={[remarkMath]}
             rehypePlugins={[rehypeKatex]}
           >
-            {question.qDescription || ''}
+            {question.qDescription || 'Error Displaying Question Description...'}
           </ReactMarkdown>
         </Box>
 
