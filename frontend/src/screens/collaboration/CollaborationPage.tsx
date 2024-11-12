@@ -3,6 +3,10 @@ import CodeEditor from "./CodeEditor";
 import { useRef, useEffect, useState } from "react";
 import io from "socket.io-client";
 import { useLocation, useNavigate } from "react-router-dom";
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';  // Import KaTeX styles for LaTeX rendering
 import ChatBox from "./Chatbox";
 import VideoChat from "./VideoChat";
 import GeminiAIQuery from "./GeminiAIQuery";
@@ -50,19 +54,30 @@ const CollaborationPage = () => {
     return () => {
       socket.off("roomUsers");
     };
-  });
+  }, [socket]);
 
   useEffect(() => {
-    // Listen for the socket disconnect event
-    socket.on("disconnect", () => {
+    console.log("im here");
+    socket.on("partnerDisconnect", () => {
+      console.log("friend left");
+      setUsersInRoom((prevUsers) => prevUsers.filter((user) => user === username));
+    });
+
+    return () => {
+      socket.off("partnerDisconnect");
+    };
+  }, [socket, username]);
+
+  useEffect(() => {
+    socket.on("endSession", () => {
       alert("The session has been ended.");
       navigate("/landingPage");
     });
   
     return () => {
-      socket.off("disconnect");
+      socket.off("endSession");
     };
-  });
+  }, [socket]);
 
   const handleEndSession = () => {
     socket.emit("endSession", roomId, codeContents, savedLines);
@@ -98,12 +113,21 @@ const CollaborationPage = () => {
         >
           {question.qTitle}
         </Typography>
+
         <Typography
           variant="body1"
           component="body"
-          sx={{ fontWeight: 700, color: "gray" }}
+          sx={{ fontWeight: 700, color: "white", textAlign: "left" }}
         >
-          {question.qDescription}
+          {/* Render Markdown and LaTeX using react-markdown */}
+          <Box sx={{ marginBottom: 2 }}>
+            <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {question.qDescription || 'Error Displaying Question Description...'}
+            </ReactMarkdown>
+          </Box>
         </Typography>
         
       </Box>
