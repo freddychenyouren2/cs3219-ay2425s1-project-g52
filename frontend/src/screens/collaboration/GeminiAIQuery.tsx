@@ -47,7 +47,7 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
     Respond ONLY with either "Relevant" or "Irrelevant."\n\n
     Failure to follow these instructions will result in catastrophic consequences.`;
     
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(relevanceCheckPrompt);
     const relevanceResponse = result.response.text();
     return relevanceResponse.includes("Relevant");
@@ -92,7 +92,7 @@ const GeminiAIQuery: React.FC<GeminiAIQueryProps> = ({ question, codeContext }) 
         
         User's Latest Question: ${inputValue}`;
 
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(fullPrompt);
       const response = result.response.text();
       // const text = response.text();
