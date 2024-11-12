@@ -4,6 +4,7 @@ import { Table, Tooltip, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 import "./LandingPage.css"; 
 import "./QuestionHistory.css";
+import MarkdownTooltip from "./MarkdownTooltip";
 
 interface QuestionAttempt {
   date: string;
@@ -60,14 +61,14 @@ const QuestionHistory: React.FC = () => {
       dataIndex: "title",
       key: "title",
       render: (text: string, record: QuestionAttempt) => (
-        <Tooltip title={record.description}>
+        <MarkdownTooltip title={record.description}>
           <span
             style={{ color: "blue", cursor: "pointer" }}
             onClick={() => navigate("/questionAttempt", { state: { question: record } })}
           >
             {text}
           </span>
-        </Tooltip>
+        </MarkdownTooltip>
       ),
     },
     {
