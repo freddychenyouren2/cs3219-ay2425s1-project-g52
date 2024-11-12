@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, Button, Select, MenuItem, InputLabel } from '@mui/material';
+import { Modal, Box, TextField, Button, Select, MenuItem, InputLabel, FormControl, OutlinedInput, SelectChangeEvent } from '@mui/material';
 import { Question } from '../../api/interfaces';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css'; //LaTeX rendering
 
 interface QuestionModalProps {
   open: boolean;
@@ -18,6 +22,7 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, 
     qComplexity: '',
   });
 
+  const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
 
   useEffect(() => {
     if (question) {
@@ -53,6 +58,13 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, 
     }
   };
 
+  const handleCategoryChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setFormData({
+      ...formData,
+      qCategory: event.target.value as string[],
+    });
+  };
+
   const handleSubmit = () => {
     if (question) {
       onEdit(question._id || '', formData);
@@ -61,6 +73,17 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, 
     }
     onClose();
   };
+
+  const topics = [
+    "Strings",
+    "Algorithms",
+    "Data Structures",
+    "Bit Manipulation",
+    "Recursion",
+    "Databases",
+    "Arrays",
+    "Brainteaser",
+  ];
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -74,23 +97,56 @@ const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, 
           fullWidth
           margin="normal"
         />
-        <TextField
-          name="qDescription"
-          label="Description"
-          value={formData.qDescription || ''}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          multiline
-        />
-        <TextField
+        <Button onClick={() => setShowMarkdownPreview(!showMarkdownPreview)} sx={{ mb: 1 }}>
+          {showMarkdownPreview ? 'Edit Description' : 'Preview Description'}
+        </Button>
+        {showMarkdownPreview ? (
+          <Box sx={{ padding: 2, backgroundColor: '#f5f5f5', borderRadius: 1, maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-line' }}>
+            <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {formData.qDescription || ''}
+            </ReactMarkdown>
+          </Box>
+        ) : (
+          <TextField
+            name="qDescription"
+            label="Description (Markdown supported)"
+            value={formData.qDescription || ''}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            multiline
+          />
+        )}
+        <FormControl fullWidth margin="normal">
+          <InputLabel sx={{fontSize: '12px'}} >Category</InputLabel>
+          <Select
+            name="qCategory"
+            label="Category"
+            multiple
+            value={formData.qCategory || []}
+            onChange={(event) => {
+              handleCategoryChange(event as unknown as React.ChangeEvent<HTMLSelectElement>);
+            }}
+            input={<OutlinedInput label="Category"/>}
+            >
+              {topics.map((category) => (
+              <MenuItem key={category} value={category}>
+                {category}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        {/* <TextField
           name="qCategory"
           label="Category"
           value={formData.qCategory?.join(', ') || ''}
           onChange={handleChange}
           fullWidth
           margin="normal"
-        />
+        /> */}
         <InputLabel sx={{fontSize: '12px'}}>
           Complexity
         </InputLabel>

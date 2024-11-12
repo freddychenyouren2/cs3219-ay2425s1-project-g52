@@ -20,8 +20,12 @@ const Login: React.FC = () => {
       if (response && response.data && response.data.username) {
         // localStorage.setItem("username", response.data.username);
         sessionStorage.setItem("username", response.data.username);
+        sessionStorage.setItem("isAdmin", response.data.isAdmin);
         navigate("/landingPage", {
-          state: { username: response.data.username },
+          state: { 
+            username: response.data.username, 
+            isAdmin: response.data.isAdmin 
+          },
         });
       } else {
         setLoading(false);

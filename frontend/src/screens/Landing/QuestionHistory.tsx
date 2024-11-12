@@ -3,6 +3,7 @@ import axios from "axios";
 import { Table, Tooltip, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 import "./LandingPage.css"; 
+import "./QuestionHistory.css";
 
 interface QuestionAttempt {
   date: string;
@@ -20,6 +21,7 @@ interface QuestionAttempt {
 const QuestionHistory: React.FC = () => {
   const [questionHistory, setQuestionHistory] = useState<QuestionAttempt[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [pageSize, setPageSize] = useState(10); // Default page size is 10
   const navigate = useNavigate();
 
   const username = sessionStorage.getItem("username") || "Guest";
@@ -91,17 +93,22 @@ const QuestionHistory: React.FC = () => {
   ];
 
   return (
-    <div style={{ height: "400px", maxWidth:"600px", overflowY: "auto", }}>
+    <div style={{ minHeight: "450px", maxHeight: "100vh", maxWidth: "90vw", overflowY: "auto" }}>
       {loading ? (
-        // Loading spinner
-        <Spin tip="Loading..." />
+        // Loading spinner with custom text
+        <Spin tip="Retrieving your attempted questions..." />
       ) : (
-        <Table 
-        columns={columns} 
-        dataSource={questionHistory} 
-        rowKey="attempt_id"
-        scroll={{ y: 300, x: 800 }} 
-        pagination={false} 
+        <Table
+          columns={columns}
+          dataSource={questionHistory}
+          rowKey="attempt_id"
+          scroll={{ y: 300, x: 800 }}
+          pagination={{
+            pageSize: pageSize, // Default Size
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50'], // Options for selecting number of items
+            onShowSizeChange: (_, size) => setPageSize(size)
+          }}
         />
       )}
     </div>
