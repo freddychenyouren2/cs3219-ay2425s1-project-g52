@@ -58,7 +58,20 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="landing-page-container">
-      <div className="log-out-container">
+      <div className="top-container">
+        <div className="access-questionPage">
+          <button className="access-questionsPage-button"
+            onClick={() => navigate("/questionsPage", {
+              state: { 
+                username: username, 
+                isAdmin: isAdmin
+              },
+            })}
+          >
+            Access Question Database
+          </button>
+        </div>
+        
         <Button
           style={{
             backgroundColor: "#1D192A",
@@ -83,19 +96,6 @@ const LandingPage: React.FC = () => {
                 Start a Session
               </button>
             )}
-
-            <div className="access-questionPage">
-              <button className="access-questionsPage-button"
-                onClick={() => navigate("/questionsPage", {
-                  state: { 
-                    username: username, 
-                    isAdmin: isAdmin
-                  },
-                })}
-              >
-                Access Question Database
-              </button>
-            </div>
 
             {hasActiveSession && (
               <div>
