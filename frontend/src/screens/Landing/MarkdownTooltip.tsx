@@ -13,7 +13,7 @@ const MarkdownTooltip: React.FC<MarkdownTooltipProps> = ({ title, children, ...p
   <Tooltip
     {...props}
     title={
-      <Box sx={{ maxWidth: 300, p: 1 }}>
+      <Box sx={{ maxWidth: 500, p: 1, fontSize: "14px", }}>
         <ReactMarkdown
           remarkPlugins={[remarkMath]}
           rehypePlugins={[rehypeKatex]}
