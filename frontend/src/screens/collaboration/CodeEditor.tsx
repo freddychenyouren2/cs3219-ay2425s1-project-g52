@@ -4,7 +4,6 @@ import { EditorState } from "@codemirror/state";
 import * as Y from "yjs";
 import { yCollab } from "y-codemirror.next";
 import { WebrtcProvider } from "y-webrtc";
-import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 import Output from "./Output";
 import { Box, Button } from "@mui/material";
@@ -38,9 +37,10 @@ const userColor = usercolors[random.uint32() % usercolors.length]
 interface CodeEditorProps {
   roomId: string;
   setCodeContents: (code: string) => void;
+  setCodingLanguage: (language: string) => void;
 }
 
-const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
+const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents, setCodingLanguage }) => {
   const ydoc = useMemo(() => new Y.Doc(), []);
   const [provider, setProvider] = useState<WebrtcProvider | null>(null);
   const [view, setView] = useState<EditorView | null>(null);
@@ -59,6 +59,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ roomId, setCodeContents }) => {
   useEffect(() => {
     const language = languageMap[languageId];
     if (language) {
+      setCodingLanguage(language.name); // Update coding language name
       setEditorMode(language.mode); // Update the mode based on the selected language
     }
   }, [languageId]); // Re-run effect whenever languageId changes

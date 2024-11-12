@@ -284,40 +284,43 @@ io.on("connection", (socket) => {
   });
 
   // Handle disconnect
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
+  socket.on("disconnect", (roomId) => {
+    console.log("partner left");
+    io.to(roomId).emit("partnerDisconnect");
   });
 
   // Handle "endSession" event
-socket.on("endSession", async (roomId, codeContents, whiteboardState) => {
-  if (roomParticipants[roomId]) {
-    // Get all connected sockets in the room and disconnect them
-    const roomSockets = io.sockets.adapter.rooms.get(roomId);
-    if (roomSockets) {
-      roomSockets.forEach((socketId) => {
-        const socketToDisconnect = io.sockets.sockets.get(socketId);
-        socketToDisconnect.disconnect(true); // Forcefully disconnect socket
-      });
+  socket.on("endSession", async (roomId, codeContents, whiteboardState) => {
+    if (roomParticipants[roomId]) {
+      // Get all connected sockets in the room and disconnect them
+      // const roomSockets = io.sockets.adapter.rooms.get(roomId);
+      // if (roomSockets) {
+      //   roomSockets.forEach((socketId) => {
+      //     const socketToDisconnect = io.sockets.sockets.get(socketId);
+      //     socketToDisconnect.disconnect(true); // Forcefully disconnect socket
+      //   });
+      // }
+      // inform users its time to go
+      // socket.to(roomId).emit("sessionEnded", { username });
+
+      // Update attempt history with code contents and whiteboard state
+      const updateData = {
+        code_contents: codeContents,
+        whiteboard_state: whiteboardState,
+      };
+
+      try {
+        await updateAttemptHistory(roomId, updateData);
+        console.log(`Attempt history for room ${roomId} updated successfully.`);
+      } catch (error) {
+        console.error(`Error updating attempt history for room ${roomId}:`, error);
+      }
+
+      // Clear room participants list
+      delete roomParticipants[roomId];
+      io.to(roomId).emit("endSession");
+      console.log(`Session in room ${roomId} has been ended and all users disconnected.`);
     }
-
-    // Update attempt history with code contents and whiteboard state
-    const updateData = {
-      code_contents: codeContents,
-      whiteboard_state: whiteboardState,
-    };
-
-    try {
-      await updateAttemptHistory(roomId, updateData);
-      console.log(`Attempt history for room ${roomId} updated successfully.`);
-    } catch (error) {
-      console.error(`Error updating attempt history for room ${roomId}:`, error);
-    }
-
-    // Clear room participants list
-    delete roomParticipants[roomId];
-
-    console.log(`Session in room ${roomId} has been ended and all users disconnected.`);
-  }
 });
 
 });
