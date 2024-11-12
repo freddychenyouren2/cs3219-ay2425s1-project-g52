@@ -9,12 +9,14 @@ import { fetchQuestions, addQuestion, editQuestion, deleteQuestion } from '../..
 import { FiArrowLeft } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import "./QuestionManager.css";
+import DuplicateTitleModal from './DuplicateTitleModal';
 
 const QuestionManager: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
+  const [isDuplicateTitleModalOpen, setDuplicateTitleModalOpen] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
 
   const isAdmin = (sessionStorage.getItem("isAdmin") === "true") || false;
@@ -35,6 +37,7 @@ const QuestionManager: React.FC = () => {
       // Check for duplicate title
       const isDuplicateTitle = questions.some(q => q.qTitle === newData.qTitle);
       if (isDuplicateTitle) {
+        setDuplicateTitleModalOpen(true); // Show modal if duplicate title found
         console.error('Failed to add a question: A question with this title already exists.');
         return; // Exit if duplicate title found
       }
@@ -63,6 +66,7 @@ const QuestionManager: React.FC = () => {
           q => q.qTitle === updatedData.qTitle && q._id !== id
         );
         if (isDuplicateTitle) {
+          setDuplicateTitleModalOpen(true); // Show modal if duplicate title found
           console.error('Failed to update question: A question with this title already exists.');
           return; // Exit if duplicate title found
         }
@@ -151,6 +155,10 @@ const QuestionManager: React.FC = () => {
         onClose={() => setConfirmModalOpen(false)}
         onConfirm={handleDelete}
         questionId={questionToDelete}
+      />
+      <DuplicateTitleModal
+        open={isDuplicateTitleModalOpen}
+        onClose={() => setDuplicateTitleModalOpen(false)}
       />
     </Box>
   );

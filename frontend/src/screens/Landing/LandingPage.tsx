@@ -7,7 +7,7 @@ import { checkActiveSession, getActiveSession } from '../../api/collaboration-ap
 
 const LandingPage: React.FC = () => {
   const username: string = sessionStorage.getItem("username") || "Guest";
-  const isAdmin: boolean = (sessionStorage.getItem("isAdmin") === "true") || false;
+  const isAdmin: boolean = (sessionStorage.getItem("isAdmin") == "true") || false;
   const navigate = useNavigate();
 
   // const usageStreak = 7;
@@ -75,7 +75,7 @@ const LandingPage: React.FC = () => {
 
       <header className="landing-page-header">
         <div className="welcome-section">
-          <h1 className="welcome-message">Welcome, {username}</h1>
+          <h1 className="welcome-message">Welcome, {username}. Admin: {isAdmin}</h1>
 
           <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
             {!hasActiveSession && (
