@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Box, TextField, Button, Select, MenuItem, InputLabel } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Modal, Button, Select, Input, Form } from 'antd';
 import { Question } from '../../api/interfaces';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css'; // LaTeX rendering
 
 interface QuestionModalProps {
   open: boolean;
@@ -11,109 +15,116 @@ interface QuestionModalProps {
 }
 
 const QuestionModal: React.FC<QuestionModalProps> = ({ open, onClose, question, onAdd, onEdit }) => {
-  const [formData, setFormData] = useState<Partial<Question>>({
-    qTitle: '',
-    qDescription: '',
-    qCategory: [],
-    qComplexity: '',
-  });
-
+  const [form] = Form.useForm();
+  const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
 
   useEffect(() => {
     if (question) {
-      setFormData({
+      form.setFieldsValue({
         qTitle: question.qTitle,
         qDescription: question.qDescription,
         qCategory: question.qCategory,
         qComplexity: question.qComplexity,
       });
     } else {
-      setFormData({
-          qTitle: '',
-          qDescription: '',
-          qCategory: [],
-          qComplexity: '',
-      }); 
+      form.resetFields();
     }
-  }, [question]);
+  }, [question, form]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-
-    if (name === 'qCategory') {
-      setFormData({
-        ...formData,
-        qCategory: value ? value.split(',').map(item => item.trim()) : [],
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      if (question) {
+        onEdit(question._id || '', values);
+      } else {
+        onAdd(values as Omit<Question, '_id'>);
+      }
+      onClose();
+    } catch (errorInfo) {
+      console.error('Validation Failed:', errorInfo);
     }
   };
 
-  const handleSubmit = () => {
-    if (question) {
-      onEdit(question._id || '', formData);
-    } else {
-      onAdd(formData as Omit<Question, '_id'>);
-    }
-    onClose();
-  };
+  const topics = [
+    "Strings",
+    "Algorithms",
+    "Data Structures",
+    "Bit Manipulation",
+    "Recursion",
+    "Databases",
+    "Arrays",
+    "Brainteaser",
+  ];
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <Box sx={{ padding: 2, backgroundColor: 'white', borderRadius: 1 }}>
-        <h2>{question ? 'Edit Question' : 'Add Question'}</h2>
-        <TextField
+    <Modal open={open} onCancel={onClose} footer={null}>
+      <h2>{question ? 'Edit Question' : 'Add Question'}</h2>
+
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form.Item
           name="qTitle"
           label="Title"
-          value={formData.qTitle || ''}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          name="qDescription"
-          label="Description"
-          value={formData.qDescription || ''}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          multiline
-        />
-        <TextField
+          rules={[{ required: true, message: 'Title is required' }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Button onClick={() => setShowMarkdownPreview(!showMarkdownPreview)} style={{ marginBottom: 8 }}>
+          {showMarkdownPreview ? 'Edit Description' : 'Preview Description'}
+        </Button>
+
+        {showMarkdownPreview ? (
+          <div style={{ padding: 16, backgroundColor: '#f5f5f5', borderRadius: 4, maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-line' }}>
+            <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {form.getFieldValue('qDescription') || ''}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <Form.Item
+            name="qDescription"
+            label="Description (Markdown supported)"
+            rules={[{ required: true, message: 'Description is required' }]}
+          >
+            <Input.TextArea rows={4} />
+          </Form.Item>
+        )}
+
+        <Form.Item
           name="qCategory"
           label="Category"
-          value={formData.qCategory?.join(', ') || ''}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-        />
-        <InputLabel sx={{fontSize: '12px'}}>
-          Complexity
-        </InputLabel>
-        <Select
+          rules={[{ required: true, message: 'Please select at least one category' }]}
+        >
+          <Select mode="multiple">
+            {topics.map((category) => (
+              <Select.Option key={category} value={category}>
+                {category}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        <Form.Item
           name="qComplexity"
           label="Complexity"
-          value={formData.qComplexity || ''}
-          onChange={(event) => {
-            handleChange(event as unknown as React.ChangeEvent<HTMLSelectElement>);
-          }}
-          fullWidth
+          rules={[{ required: true, message: 'Complexity is required' }]}
         >
-          <MenuItem value="Easy">Easy</MenuItem>
-          <MenuItem value="Medium">Medium</MenuItem>
-          <MenuItem value="Hard">Hard</MenuItem>
-        </Select>
-        <Button variant="contained" color="error" onClick={onClose} style={{margin:'4px'}}>
+          <Select>
+            <Select.Option value="Easy">Easy</Select.Option>
+            <Select.Option value="Medium">Medium</Select.Option>
+            <Select.Option value="Hard">Hard</Select.Option>
+          </Select>
+        </Form.Item>
+
+        <Button onClick={onClose} style={{ margin: 4 }}>
           Cancel
         </Button>
-        <Button variant="contained" color="primary" onClick={handleSubmit} style={{margin:'4px'}}>
+        <Button type="primary" htmlType="submit" style={{ margin: 4 }}>
           Save
         </Button>
-      </Box>
+      </Form>
     </Modal>
   );
 };

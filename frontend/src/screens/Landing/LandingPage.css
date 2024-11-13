@@ -9,14 +9,18 @@
   color: #f5f5f5;
   min-height: 100vh;
   display: flex;
+  
   flex-direction: column;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.log-out-container {
+.top-container {
   padding: 10px;
+  width: 95vw;
   display: flex;
-  flex-direction: row-reverse;
+  justify-content: right;
+  align-self: center;
+  flex-direction: row;
 }
 
 .landing-page-header {
@@ -29,6 +33,7 @@
 
 .welcome-section {
   text-align: center;
+  justify-content: center;
 }
 
 .welcome-message {
@@ -49,6 +54,19 @@
   transition: transform 0.2s ease;
 }
 
+.access-questionsPage-button {
+  background:linear-gradient(90deg, #FF6F61, #ea4e40 );
+  color: white;
+  padding: 10px 25px;
+  margin: 0px 10px;
+  border: none;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
 .start-session-button:disabled {
   background: #e0e0e0; /* Lighter background when disabled */
   color: #b0b0b0; /* Lighter text color */
@@ -57,7 +75,7 @@
   opacity: 0.6; /* Slightly reduce opacity */
 }
 
-.start-session-button:hover {
+.start-session-button:hover, .access-questionsPage-button:hover {
   transform: scale(1.05);
 }
 
