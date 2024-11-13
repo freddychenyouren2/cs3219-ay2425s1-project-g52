@@ -9,12 +9,14 @@ import { fetchQuestions, addQuestion, editQuestion, deleteQuestion } from '../..
 import { FiArrowLeft } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import "./QuestionManager.css";
+import DuplicateTitleModal from './DuplicateTitleModal';
 
 const QuestionManager: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
+  const [isDuplicateTitleModalOpen, setDuplicateTitleModalOpen] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
 
   const isAdmin = (sessionStorage.getItem("isAdmin") === "true") || false;
@@ -32,6 +34,14 @@ const QuestionManager: React.FC = () => {
 
   const handleAdd = async (newData: Omit<Question, 'qId'>) => {
     try {
+      // Check for duplicate title
+      const isDuplicateTitle = questions.some(q => q.qTitle === newData.qTitle);
+      if (isDuplicateTitle) {
+        setDuplicateTitleModalOpen(true); // Show modal if duplicate title found
+        console.error('Failed to add a question: A question with this title already exists.');
+        return; // Exit if duplicate title found
+      }
+
       let newQId = 1;
       const existingQId = questions.map(q => q.qId);
       for (let i = 1; i <= questions.length + 1; i++) {
@@ -50,6 +60,18 @@ const QuestionManager: React.FC = () => {
   };
   const handleEdit = async (id: string, updatedData: Partial<Question>) => {
     try {
+      // Check for duplicate title if title is being updated
+      if (updatedData.qTitle) {
+        const isDuplicateTitle = questions.some(
+          q => q.qTitle === updatedData.qTitle && q._id !== id
+        );
+        if (isDuplicateTitle) {
+          setDuplicateTitleModalOpen(true); // Show modal if duplicate title found
+          console.error('Failed to update question: A question with this title already exists.');
+          return; // Exit if duplicate title found
+        }
+      }
+
       await editQuestion(id, updatedData);
       setQuestions(prevQuestions => 
         prevQuestions.map(question => (question._id === id ? { ...question, ...updatedData } : question))
@@ -133,6 +155,10 @@ const QuestionManager: React.FC = () => {
         onClose={() => setConfirmModalOpen(false)}
         onConfirm={handleDelete}
         questionId={questionToDelete}
+      />
+      <DuplicateTitleModal
+        open={isDuplicateTitleModalOpen}
+        onClose={() => setDuplicateTitleModalOpen(false)}
       />
     </Box>
   );

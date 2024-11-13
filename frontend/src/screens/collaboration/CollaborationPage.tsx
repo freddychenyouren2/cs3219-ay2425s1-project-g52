@@ -23,6 +23,7 @@ const CollaborationPage = () => {
   const roomId = location?.state.roomId;
   const question = location?.state.question;
   const navigate = useNavigate();
+  const [codingLanguage, setCodingLanguage] = useState("Python");
   const [codeContents, setCodeContents] = useState("");
   const [savedLines, setSavedLines] = useState([]); // New state to save lines
 
@@ -136,6 +137,7 @@ const CollaborationPage = () => {
         <GeminiAIQuery 
           question={question}
           codeContext={codeContents}
+          codingLanguage={codingLanguage}
           />
       </Box>
 
@@ -155,7 +157,7 @@ const CollaborationPage = () => {
             overflow: "hidden",
           }}
         >
-          <CodeEditor roomId={roomId} setCodeContents={setCodeContents} />
+          <CodeEditor roomId={roomId} setCodeContents={setCodeContents} setCodingLanguage={setCodingLanguage} />
 
         </Box>
 
