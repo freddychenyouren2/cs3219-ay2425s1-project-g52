@@ -23,6 +23,8 @@ const LoadingPage: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [matchSuccess, setMatchSuccess] = useState<boolean>(false);
   const intervalIdRef = useRef<NodeJS.Timeout | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [question, setQuestion] = useState<any | null>(null);
 
   const startProgress = useCallback(() => {
     if (intervalIdRef.current) clearInterval(intervalIdRef.current);
@@ -54,6 +56,10 @@ const LoadingPage: React.FC = () => {
 
       if (data.status === "matched") {
         setMatchSuccess(true);
+        console.log("Match found!");
+        console.log(data.roomId);
+        setRoomId(data.roomId);
+        setQuestion(data.question);
         if (intervalIdRef.current) clearInterval(intervalIdRef.current);
       } else if (data.status === "timeout") {
         setDialogOpen(true);
@@ -73,12 +79,28 @@ const LoadingPage: React.FC = () => {
 
   const handleCancel = async () => {
     if (intervalIdRef.current) clearInterval(intervalIdRef.current);
+    setDialogOpen(false);
     setProgress(0);
 
     try {
-      await fetch(`http://localhost:3002/match/${userId}`, {
+      const requestBody = {
+        topic,
+        difficulty,
+      };
+
+      const response = await fetch(`http://localhost:3002/match/${userId}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
+
+      if (!response.ok) {
+        console.error("Failed to cancel matching request");
+      } else {
+        console.log(`User ${userId} removed from all queues`);
+      }
     } catch (error) {
       console.error("Error cancelling matching request:", error);
     }
@@ -118,7 +140,10 @@ const LoadingPage: React.FC = () => {
   };
 
   const handleContinue = () => {
-    navigate("/topicsPage", { state: { userId } });
+    // navigate("/questionsPage", { state: { userId } });
+    navigate("/collaboration", {
+      state: { roomId: roomId, username: userId, question: question },
+    });
   };
 
   return (
@@ -157,9 +182,7 @@ const LoadingPage: React.FC = () => {
         {matchSuccess && (
           <MatchSuccessDialog
             open={matchSuccess}
-            onClose={() =>
-              navigate("/questionsPage", { state: { username: userId } })
-            }
+            onClose={handleCancel}
             onContinue={handleContinue}
           />
         )}

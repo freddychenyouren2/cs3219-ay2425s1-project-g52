@@ -1,34 +1,23 @@
 import amqp from "amqplib";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 let channel;
+let connection;
 
-export const connectMongoDB = async () => {
+// Connect to RabbitMQ
+export async function connectRabbitMQ() {
   try {
-    await mongoose.connect(process.env.ATLAS_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("Connected to MongoDB");
-  } catch (error) {
-    console.error("Failed to connect to MongoDB", error);
-  }
-};
-
-export const connectRabbitMQ = async () => {
-  try {
-    const connection = await amqp.connect(process.env.RABBITMQ_URI);
+    connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://rabbitmq:5672");
     channel = await connection.createChannel();
-    channel.prefetch(1);
-    await channel.assertQueue("match_requests", { durable: true });
-    await channel.assertQueue("notifications", { durable: true });
     console.log("Connected to RabbitMQ");
   } catch (error) {
-    console.error("Failed to connect to RabbitMQ", error);
+    console.error("Error connecting to RabbitMQ:", error);
+    throw error;
   }
-};
+}
 
-export const getChannel = () => channel;
+export function getChannel() {
+  if (!channel) {
+    throw new Error("Channel is not initialized. Please connect first.");
+  }
+  return channel;
+}

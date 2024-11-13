@@ -1,29 +1,41 @@
-import WebSocket from 'ws';
+import WebSocket from "ws";
 
 const ws_clients = new Map();
 
-const initializeWebSocketServer = (port) => {
+// Initialize the WebSocket server
+export async function initializeWebSocketServer(port) {
   const wss = new WebSocket.Server({ port });
 
-  wss.on('connection', (ws, req) => {
-    const userId = req.url.split('/').pop();
+  wss.on("connection", (ws, req) => {
+    const userId = req.url.split("/").pop();
     ws_clients.set(userId, ws);
 
-    ws.on('close', () => {
+    ws.on("close", () => {
       ws_clients.delete(userId);
     });
   });
 
   console.log(`WebSocket server is running on port ${port}`);
-};
+}
 
-const notifyUser = (userId, status) => {
+// To notify the user about the status of the request
+export function notifyUser(userId, status, roomData = undefined) {
   const ws = ws_clients.get(userId);
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    const message = `{"userId":"${userId}","status":"${status}"}`;
-    console.log(message)
+  if (ws?.readyState === WebSocket.OPEN) {
+    const messageObject = {
+      userId: userId,
+      status: status,
+    };
+
+    if (roomData !== undefined) {
+      messageObject.roomId = roomData.roomId;
+      messageObject.question = roomData.question;
+    }
+    const message = JSON.stringify(messageObject);
+
+    console.log("message sent to user:", message);
     ws.send(message);
   }
-};
+}
 
-export { initializeWebSocketServer, notifyUser, ws_clients };
+export { ws_clients };
