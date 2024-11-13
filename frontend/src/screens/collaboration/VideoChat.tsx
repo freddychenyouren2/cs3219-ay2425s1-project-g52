@@ -41,6 +41,44 @@ const VideoChat: React.FC<VideoChatProps> = ({
   const [showWhiteboard, setShowWhiteboard] = useState<boolean>(false);
 
   useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      socket.emit("userLeft", { username, roomId });
+      console.log("User left the room");
+      event.returnValue = ""; // Some browsers require setting this
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [socket, username, roomId]);
+
+  useEffect(() => {
+    socket.on("endSession", () => {
+      if (mediaStreamRef.current) {
+        // Stop the video track
+        const videoTrack = mediaStreamRef.current.getVideoTracks()[0];
+        if (videoTrack) {
+          console.log("Stopping video track");
+          videoTrack.stop();
+        }
+
+        // Stop the audio track
+        const audioTrack = mediaStreamRef.current.getAudioTracks()[0];
+        if (audioTrack) {
+          console.log("Stopping audio track");
+          audioTrack.stop();
+        }
+      }
+    });
+
+    return () => {
+      socket.off("endSession");
+    };
+  }, [socket]);
+
+  useEffect(() => {
     // Listen for the "roomFull" event from the backend
     socket.on(
       "roomFull",
@@ -62,6 +100,18 @@ const VideoChat: React.FC<VideoChatProps> = ({
       socket.off("roomFull");
     };
   }, [socket, username]);
+
+  useEffect(() => {
+    socket.on("userLeft", (data: { username: string }) => {
+      const { username: leftUsername } = data;
+      console.log("User left:", data);
+      setCanStartCall(false); // Set not ready to call
+    });
+
+    return () => {
+      socket.off("userLeft");
+    };
+  });
 
   useEffect(() => {
     socket.on("openWhiteboard", () => {
